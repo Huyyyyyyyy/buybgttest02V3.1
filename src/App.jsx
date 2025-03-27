@@ -21,7 +21,7 @@ import {
   Paper,
   TablePagination,
 } from "@mui/material";
-import { allOrderList } from "../src/apis/comon";
+import { allOrderList, allOrderListAccount } from "../src/apis/comon";
 
 // Địa chỉ hợp đồng và ABI (giữ nguyên)
 const CONTRACT_ADDRESS = "0x5f8a463334E29635Bdaca9c01B76313395462430";
@@ -66,6 +66,7 @@ export default function BGTMarketApp() {
 
   //order list
   const [orders, setOrders] = useState([]);
+  const [ordersAccount, setOrdersAccount] = useState([]);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [total, setTotal] = useState(0);
@@ -337,10 +338,7 @@ export default function BGTMarketApp() {
             bgtBalance = await vaultContract.earned(userAddress); // Gọi hàm earned
             bgtBalance = ethers.formatUnits(bgtBalance, 18); // Chuyển đổi từ Wei sang đơn vị thông thường (giả sử BGT có 18 decimals)
           } catch (err) {
-            console.error(
-              `Error fetching BGT earned for vault ${vault.name}:`,
-              err
-            );
+            console.error(`Error fetching BGT earned for vault ${vault.name}:`, err);
             bgtBalance = "0"; // Nếu lỗi, đặt số dư là 0
           }
           return {
@@ -365,7 +363,6 @@ export default function BGTMarketApp() {
       }
       const params = { page: pageNumber, size: pageSize, state: 1, type: type };
       const response = await allOrderList(params);
-      console.log(response);
       setOrders(response.list);
       setTotal(response.total);
     } catch (error) {
@@ -373,10 +370,24 @@ export default function BGTMarketApp() {
     }
   };
 
+  const fetchAccountOrders = async (pageNumber, pageSize) => {
+    try {
+      const params = { address: account, page: pageNumber, size: pageSize, state: -1, type: -1 };
+      const response = await allOrderListAccount(params);
+      console.log(response)
+      setOrdersAccount(response.list);
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+    }
+  };
+
   useEffect(() => {
     fetchOrders(page, rowsPerPage);
-  }, [page, rowsPerPage, activeTab]);
+    fetchAccountOrders(page, rowsPerPage);
+  }, [page, rowsPerPage, activeTab, account]);
   const displayedOrders = orders;
+  const displayOrdersAccount = ordersAccount;
+
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -410,14 +421,19 @@ export default function BGTMarketApp() {
         signer
       );
       await getBeraPrice(contract);
-      // await fetchBgtBalances(signer); // Gọi hàm để lấy số dư BGT
+      await fetchBgtBalances(signer); // Gọi hàm để lấy số dư BGT sau khi kết nối ví
 
-      console.log(await allOrderList(account, 1, 5));
     } catch (err) {
       console.error("Connect wallet error:", err);
       setStatus(`Lỗi khi kết nối ví: ${err.message}`);
     }
   };
+
+  useEffect(() => {
+    if (signer) {
+      fetchBgtBalances(signer);
+    }
+  }, [signer]);
 
   const loadBalance = async (signer) => {
     try {
@@ -630,7 +646,7 @@ export default function BGTMarketApp() {
     }
   };
 
-  const fillSellOrder = async (orderId) => {
+  const fillSellOrder = async (orderId, amount) => {
     try {
       const contract = new ethers.Contract(
         CONTRACT_ADDRESS,
@@ -640,7 +656,10 @@ export default function BGTMarketApp() {
 
       const fillTx = await contract.fillSellBgtOrder(
         BigInt(orderId),
-        BigInt(2)
+        BigInt(2),
+        {
+          gasLimit: 500000,
+        }
       );
 
       console.log(fillTx);
@@ -661,9 +680,11 @@ export default function BGTMarketApp() {
       const fillTx = await contract.fillBuyBgtOrder(
         BigInt(orderId),
         vault,
-        BigInt(2)
+        BigInt(2),
+        {
+          gasLimit: 500000,
+        }
       );
-
     } catch (err) {
       console.error("Fill order error:", err);
       setStatus("Lỗi khi khớp lệnh");
@@ -831,6 +852,7 @@ export default function BGTMarketApp() {
             >
               <MenuItem value="Buy">Mua BGT</MenuItem>
               <MenuItem value="Sell">Bán BGT</MenuItem>
+              <MenuItem value="Orders">Orders List</MenuItem>
             </Select>
           </FormControl>
 
@@ -935,7 +957,7 @@ export default function BGTMarketApp() {
                 TẠO LỆNH
               </Button>
             </>
-          ) : (
+          ) : orderType === "Sell" ? (
             <>
               <FormControl fullWidth sx={{ mb: 2 }}>
                 <InputLabel id="vault-label">Reward Vault</InputLabel>
@@ -947,13 +969,18 @@ export default function BGTMarketApp() {
                   sx={{
                     borderRadius: "12px",
                     backgroundColor: "#f5f5f5",
+
                   }}
                 >
                   <MenuItem value="">
                     <em>Chọn Vault</em>
                   </MenuItem>
                   {vaultsWithBalance.map((vault) => (
-                    <MenuItem key={vault.address} value={vault.address}>
+                    <MenuItem
+                      key={vault.address}
+                      value={vault.address}
+                      disabled={parseFloat(vault.bgtBalance) <= 0} // Vô hiệu hóa nếu số dư <= 0
+                    >
                       <Box
                         sx={{
                           display: "flex",
@@ -974,10 +1001,7 @@ export default function BGTMarketApp() {
                           />
                           {vault.name}
                         </Box>
-                        <Typography
-                          variant="body2"
-                          sx={{ color: "text.secondary" }}
-                        >
+                        <Typography variant="body2" sx={{ color: "text.secondary" }}>
                           {vault.bgtBalance} BGT
                         </Typography>
                       </Box>
@@ -1071,63 +1095,45 @@ export default function BGTMarketApp() {
                 BÁN
               </Button>
             </>
+          ) : (
+            <TableContainer component={Paper}>
+              <Table sx={{ maxWidth: 100 }} aria-label="order table">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>BGT Price</TableCell>
+                    <TableCell>BGT Amount</TableCell>
+                    <TableCell>Type</TableCell>
+                    <TableCell>Action</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {displayOrdersAccount.map((order, index) => (
+                    <TableRow key={order.order_id || index}>
+                      <TableCell>{order.price}</TableCell>
+                      <TableCell>{(+order.filled_bgt_amount).toFixed(3)}/{(+order.bgt_amount).toFixed(2)}</TableCell>
+                      <TableCell style={{ color: (order.type === 2 ? "red" : "green") }}>{(order.type) === 2 ? "Sell" : "Buy"}</TableCell>
+                      <TableCell>
+                        <Button
+                          variant="contained"
+                          color={order.state === 1 ? "success" : "gray"}
+                          disabled={order.state === 1 ? false : true}
+                          onClick={
+                            order.type === 1
+                              ? () =>
+                                closeOrder(order.order_id, "Buy")
+                              : () => closeOrder(order.order_id, "Sell")
+                          }
+                          sx={{ borderRadius: "12px" }}
+                        >
+                          {order.state === 1 ? "Close" : "Closed"}
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
           )}
-        </Box>
-
-        <Box sx={{ mb: 3 }}>
-          <TextField
-            label="Nhập Order ID"
-            variant="outlined"
-            fullWidth
-            sx={{ mb: 2, borderRadius: "12px", backgroundColor: "#f5f5f5" }}
-            value={orderId}
-            onChange={(e) => setOrderId(e.target.value)}
-          />
-          <Button
-            variant="contained"
-            color="warning"
-            onClick={() => fillOrder(orderId)}
-            fullWidth
-            sx={{
-              mb: 1,
-              py: 1.5,
-              fontWeight: "bold",
-              borderRadius: "12px",
-              boxShadow: "0 4px 12px rgba(255, 165, 0, 0.3)",
-            }}
-          >
-            KHỚP LỆNH
-          </Button>
-          <Box sx={{ display: "flex", gap: 2 }}>
-            <Button
-              variant="contained"
-              color="error"
-              onClick={() => closeOrder(orderId, "Buy")}
-              fullWidth
-              sx={{
-                py: 1.5,
-                fontWeight: "bold",
-                borderRadius: "12px",
-                boxShadow: "0 4px 12px rgba(255, 0, 0, 0.3)",
-              }}
-            >
-              HỦY LỆNH MUA
-            </Button>
-            <Button
-              variant="contained"
-              color="error"
-              onClick={() => closeOrder(orderId, "Sell")}
-              fullWidth
-              sx={{
-                py: 1.5,
-                fontWeight: "bold",
-                borderRadius: "12px",
-                boxShadow: "0 4px 12px rgba(255, 0, 0, 0.3)",
-              }}
-            >
-              HỦY LỆNH BÁN
-            </Button>
-          </Box>
         </Box>
         {status && (
           <Typography variant="body2" color="text.secondary" textAlign="center">
@@ -1138,7 +1144,7 @@ export default function BGTMarketApp() {
 
       <Container
         sx={{
-          width: "600px",
+          width: "1500px",
           bgcolor: "rgba(255,255,255,0.9)",
           borderRadius: "20px",
           p: 4,
@@ -1201,12 +1207,12 @@ export default function BGTMarketApp() {
                       onClick={
                         activeTab === "Buy"
                           ? () =>
-                              fillBuyOrder(order.order_id, order.vault_address)
-                          : () => fillSellOrder(order.order_id)
+                            fillSellOrder(order.order_id, order.amount)
+                          : () => fillBuyOrder(order.order_id, "0xc2baa8443cda8ebe51a640905a8e6bc4e1f9872c")
                       }
                       sx={{ borderRadius: "12px" }}
                     >
-                      {activeTab === "Buy" ? "FillBuyOrder" : "FillSellOrder"}
+                      {activeTab === "Buy" ? "Buy" : "Sell"}
                     </Button>
                   </TableCell>
                 </TableRow>
