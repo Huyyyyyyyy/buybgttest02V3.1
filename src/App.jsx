@@ -643,8 +643,6 @@ export default function BGTMarketApp() {
         BigInt(2)
       );
 
-      await fillTx.wait();
-
       console.log(fillTx);
     } catch (err) {
       console.error("Fill order error:", err);
@@ -666,7 +664,6 @@ export default function BGTMarketApp() {
         BigInt(2)
       );
 
-      await fillTx.wait();
     } catch (err) {
       console.error("Fill order error:", err);
       setStatus("Lỗi khi khớp lệnh");
