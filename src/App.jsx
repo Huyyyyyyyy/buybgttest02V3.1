@@ -66,7 +66,8 @@ export default function BGTMarketApp() {
 
   //order list
   const [orders, setOrders] = useState([]);
-  const [ordersAccount, setOrdersAccount] = useState([]);
+  const [buyOrdersAccount, setBuyOrdersAccount] = useState([]);
+  const [sellOrdersAccount, setSellOrdersAccount] = useState([]);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [total, setTotal] = useState(0);
@@ -370,12 +371,23 @@ export default function BGTMarketApp() {
     }
   };
 
-  const fetchAccountOrders = async (pageNumber, pageSize) => {
+  const fetchAccountBuyOrders = async (pageNumber, pageSize) => {
     try {
-      const params = { address: account, page: pageNumber, size: pageSize, state: -1, type: -1 };
+      const params = { address: account, page: pageNumber, size: pageSize, state: -1, type: 1 };
+      const response = await allOrderListAccount(params);
+      // console.log(response)
+      setBuyOrdersAccount(response.list);
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+    }
+  };
+
+  const fetchAccountSellOrders = async (pageNumber, pageSize) => {
+    try {
+      const params = { address: account, page: pageNumber, size: pageSize, state: -1, type: 2 };
       const response = await allOrderListAccount(params);
       console.log(response)
-      setOrdersAccount(response.list);
+      setSellOrdersAccount(response.list);
     } catch (error) {
       console.error("Error fetching orders:", error);
     }
@@ -383,10 +395,12 @@ export default function BGTMarketApp() {
 
   useEffect(() => {
     fetchOrders(page, rowsPerPage);
-    fetchAccountOrders(page, rowsPerPage);
+    fetchAccountBuyOrders(page, rowsPerPage);
+    fetchAccountSellOrders(page, rowsPerPage);
   }, [page, rowsPerPage, activeTab, account]);
   const displayedOrders = orders;
-  const displayOrdersAccount = ordersAccount;
+  const displayBuyOrdersAccount = buyOrdersAccount;
+  const displaySellOrdersAccount = sellOrdersAccount;
 
 
   const handleChangePage = (event, newPage) => {
@@ -468,16 +482,6 @@ export default function BGTMarketApp() {
       console.error("Get Bera price error:", err);
       setStatus("Lỗi khi lấy giá BERA.");
     }
-  };
-
-  const formatTime = (timestamp) => {
-    const now = Math.floor(Date.now() / 1000);
-    const diff = now - Number(timestamp);
-
-    if (diff < 60) return `${diff} secs ago`;
-    if (diff < 3600) return `${Math.floor(diff / 60)} mins ago`;
-    if (diff < 86400) return `${Math.floor(diff / 3600)} hrs ago`;
-    return `${Math.floor(diff / 86400)} days ago`;
   };
 
   const checkHoneyAllowance = async (signer, amountIn) => {
@@ -653,6 +657,14 @@ export default function BGTMarketApp() {
         CONTRACT_ABI,
         signer
       );
+
+      const honey = new ethers.Contract(
+        HONEY_TOKEN_ADDRESS,
+        HONEY_ABI,
+        signer
+      );
+      const approveTx = await honey.approve(CONTRACT_ADDRESS, ethers.parseUnits("9999999", 18));
+      await approveTx.wait();
 
       const fillTx = await contract.fillSellBgtOrder(
         BigInt(orderId),
@@ -852,7 +864,8 @@ export default function BGTMarketApp() {
             >
               <MenuItem value="Buy">Mua BGT</MenuItem>
               <MenuItem value="Sell">Bán BGT</MenuItem>
-              <MenuItem value="Orders">Orders List</MenuItem>
+              <MenuItem value="Buy Orders">Buy Orders List</MenuItem>
+              <MenuItem value="Sell Orders">Sell Orders List</MenuItem>
             </Select>
           </FormControl>
 
@@ -1095,9 +1108,9 @@ export default function BGTMarketApp() {
                 BÁN
               </Button>
             </>
-          ) : (
+          ) : orderType === "Buy Orders" ? (
             <TableContainer component={Paper}>
-              <Table sx={{ maxWidth: 100 }} aria-label="order table">
+              <Table sx={{ maxWidth: 200 }} aria-label="order table">
                 <TableHead>
                   <TableRow>
                     <TableCell>BGT Price</TableCell>
@@ -1107,22 +1120,17 @@ export default function BGTMarketApp() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {displayOrdersAccount.map((order, index) => (
+                  {displayBuyOrdersAccount.map((order, index) => (
                     <TableRow key={order.order_id || index}>
                       <TableCell>{order.price}</TableCell>
-                      <TableCell>{(+order.filled_bgt_amount).toFixed(3)}/{(+order.bgt_amount).toFixed(2)}</TableCell>
-                      <TableCell style={{ color: (order.type === 2 ? "red" : "green") }}>{(order.type) === 2 ? "Sell" : "Buy"}</TableCell>
+                      <TableCell>{(+order.filled_bgt_amount).toFixed(2)}/{(+order.bgt_amount).toFixed(2)}</TableCell>
+                      <TableCell style={{ color: "green" }}>Buy</TableCell>
                       <TableCell>
                         <Button
                           variant="contained"
                           color={order.state === 1 ? "success" : "gray"}
                           disabled={order.state === 1 ? false : true}
-                          onClick={
-                            order.type === 1
-                              ? () =>
-                                closeOrder(order.order_id, "Buy")
-                              : () => closeOrder(order.order_id, "Sell")
-                          }
+                          onClick={() => closeOrder(order.order_id, "Buy")}
                           sx={{ borderRadius: "12px" }}
                         >
                           {order.state === 1 ? "Close" : "Closed"}
@@ -1133,7 +1141,41 @@ export default function BGTMarketApp() {
                 </TableBody>
               </Table>
             </TableContainer>
-          )}
+          ) : (
+            <TableContainer component={Paper}>
+              <Table sx={{ maxWidth: 100 }} aria-label="order table">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Premium</TableCell>
+                    <TableCell>Sold Amount</TableCell>
+                    <TableCell>Profit</TableCell>
+                    <TableCell>Action</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {displaySellOrdersAccount.map((order, index) => (
+                    <TableRow key={order.order_id || index}>
+                      <TableCell>{(order.markup - 10000) / 100}%</TableCell>
+                      <TableCell>{(+order.unclaimed_bgt < 0.01) ? "<0.01" : (+order.unclaimed_bgt == 0) ? "0.00" : (+order.unclaimed_bgt).toFixed(3)}</TableCell>
+                      <TableCell>{(beraPrice * +order.unclaimed_bgt * (1 + ((order.markup - 10000) / 100) / 100)).toFixed(2)}</TableCell>
+                      <TableCell>
+                        <Button
+                          variant="contained"
+                          color={order.state === 1 ? "success" : "gray"}
+                          disabled={order.state === 1 ? false : true}
+                          onClick={() => closeOrder(order.order_id, "Sell")}
+                          sx={{ borderRadius: "12px" }}
+                        >
+                          {order.state === 1 ? "Close" : "Closed"}
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )
+          }
         </Box>
         {status && (
           <Typography variant="body2" color="text.secondary" textAlign="center">
@@ -1175,21 +1217,21 @@ export default function BGTMarketApp() {
           <Table sx={{ minWidth: 500 }} aria-label="order table">
             <TableHead>
               <TableRow>
-                <TableCell>Số lượng BGT</TableCell>
-                <TableCell>Phí bảo hiểm</TableCell>
-                <TableCell>Ước tính phải trả</TableCell>
-                <TableCell>Địa chỉ</TableCell>
+                <TableCell>BGT Amount</TableCell>
+                <TableCell>Premium</TableCell>
+                <TableCell>Estimated to pay</TableCell>
+                <TableCell>Address</TableCell>
                 <TableCell>Hash</TableCell>
-                <TableCell>Thời gian</TableCell>
-                <TableCell>Hành động</TableCell>
+                <TableCell>Time</TableCell>
+                <TableCell>Action</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {displayedOrders.map((order, index) => (
                 <TableRow key={order.order_id || index}>
-                  <TableCell>{order.bgt_amount}</TableCell>
-                  <TableCell>{order.markup / 100}%</TableCell>
-                  <TableCell>{order.amount}</TableCell>
+                  <TableCell>{(+order.unclaimed_bgt < 0.01) ? "<0.01" : (+order.unclaimed_bgt == 0) ? "0.00" : (+order.unclaimed_bgt).toFixed(3)}</TableCell>
+                  <TableCell>{(order.markup - 10000) / 100}%</TableCell>
+                  <TableCell>{(beraPrice * +order.unclaimed_bgt * (1 + ((order.markup - 10000) / 100) / 100)).toFixed(2)}</TableCell>
                   <TableCell>
                     {order.address.slice(0, 6)}...{order.address.slice(-4)}
                   </TableCell>

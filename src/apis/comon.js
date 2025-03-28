@@ -19,10 +19,15 @@ export const allOrderList = async (params) => {
 export const allOrderListAccount = async (params) => {
   let res;
   const { page, size, state, type, address } = params;
-  const orderBy = "amount desc, bgt_amount desc";
+  let orderBy = "";
+  if (type == 2) {
+    orderBy = "markup desc, state asc"
+  } else {
+    orderBy = "amount desc, bgt_amount desc, state asc"
+  }
   try {
     const response = await axios.get(
-      `${BASE_URL}/bot/bgtpool/allOrderList?address=${address}&page=${page}&size=${46}&state=${state}&type=${-1}&orderBy=${orderBy}`
+      `${BASE_URL}/bot/bgtpool/allOrderList?address=${address}&page=${page}&size=${size}&state=${state}&type=${type}&orderBy=${orderBy}`
     );
     if (response.status == 200) {
       res = response.data.data;
