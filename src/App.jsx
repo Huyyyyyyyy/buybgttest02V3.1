@@ -248,20 +248,6 @@ export default function BGTMarketApp() {
     }
   };
 
-  const checkHoneyAllowance = async (signer, amountIn) => {
-    try {
-      const honey = new ethers.Contract(HONEY_TOKEN_ADDRESS, HONEY_ABI, signer);
-      const allowance = await honey.allowance(
-        await signer.getAddress(),
-        CONTRACT_ADDRESS
-      );
-      return allowance.gte(amountIn);
-    } catch (err) {
-      console.error("Check allowance error:", err);
-      return false;
-    }
-  };
-
   // Hàm tính số lượng HONEY dựa trên phần trăm số dư
   const setAmountByPercentage = (percentage) => {
     if (!honeyBalance) return;
@@ -306,15 +292,10 @@ export default function BGTMarketApp() {
           HONEY_ABI,
           signer
         );
-        const hasEnoughAllowance = await checkHoneyAllowance(signer, amountIn);
-        if (!hasEnoughAllowance) {
-          setStatus(
-            "Đang yêu cầu cấp quyền HONEY... Vui lòng xác nhận trên MetaMask."
-          );
-          const approveTx = await honey.approve(CONTRACT_ADDRESS, amountIn);
-          await approveTx.wait();
-          setStatus("Đã cấp quyền HONEY!");
-        }
+
+        const approveTx = await honey.approve(CONTRACT_ADDRESS, amountIn);
+        await approveTx.wait();
+        setStatus("Đã cấp quyền HONEY!");
 
         const tx = await contract.openBuyBgtOrder(priceIn, amountIn, nodeId, {
           gasLimit: 500000,
