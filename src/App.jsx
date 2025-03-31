@@ -59,6 +59,15 @@ export default function BGTMarketApp() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [total, setTotal] = useState(0);
   const [rewardVaults, setRewardVaults] = useState([]);
+  const [vaultForFill, setVaultForFill] = useState("");
+
+  const [totalPersonalBuy, setTotalPersonalBuy] = useState(0);
+  const [pagePersonalBuy, setPagePersonalBuy] = useState(0);
+  const [rowsPerPagePersonalBuy, setRowsPerPagePersonalBuy] = useState(5);
+
+  const [totalPersonalSell, setTotalPersonalSell] = useState(0);
+  const [pagePersonalSell, setPagePersonalSell] = useState(0);
+  const [rowsPerPagePersonalSell, setRowsPerPagePersonalSell] = useState(5);
 
   const percentagePresets = [10, 50, 100, 1000];
   const [vaultsWithBalance, setVaultsWithBalance] = useState(rewardVaults);
@@ -123,6 +132,7 @@ export default function BGTMarketApp() {
       };
       const response = await allOrderListAccount(params);
       setBuyOrdersAccount(response.list);
+      setTotalPersonalBuy(response.total);
     } catch (error) {
       console.error("Error fetching orders:", error);
     }
@@ -140,6 +150,7 @@ export default function BGTMarketApp() {
       const response = await allOrderListAccount(params);
       console.log(response);
       setSellOrdersAccount(response.list);
+      setTotalPersonalSell(response.total);
     } catch (error) {
       console.error("Error fetching orders:", error);
     }
@@ -162,13 +173,9 @@ export default function BGTMarketApp() {
     if (account !== "") {
       loadBalance(signer);
       fetchOrders(page, rowsPerPage);
-      fetchAccountBuyOrders(page, rowsPerPage);
-      fetchAccountSellOrders(page, rowsPerPage);
     }
   }, [page, rowsPerPage, activeTab, account]);
   const displayedOrders = orders;
-  const displayBuyOrdersAccount = buyOrdersAccount;
-  const displaySellOrdersAccount = sellOrdersAccount;
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -177,6 +184,38 @@ export default function BGTMarketApp() {
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
+  };
+
+  useEffect(() => {
+    if (account !== "") {
+      fetchAccountBuyOrders(pagePersonalBuy, rowsPerPagePersonalBuy);
+    }
+  }, [pagePersonalBuy, rowsPerPagePersonalBuy, account]);
+  const displayBuyOrdersAccount = buyOrdersAccount;
+
+  const handleChangePagePersonalBuy = (event, newPage) => {
+    setPagePersonalBuy(newPage);
+  };
+
+  const handleChangeRowsPerPagePersonalBuy = (event) => {
+    setRowsPerPagePersonalBuy(parseInt(event.target.value, 10));
+    setPagePersonalBuy(0);
+  };
+
+  useEffect(() => {
+    if (account !== "") {
+      fetchAccountSellOrders(pagePersonalSell, rowsPerPagePersonalSell);
+    }
+  }, [pagePersonalSell, rowsPerPagePersonalSell, account]);
+  const displaySellOrdersAccount = sellOrdersAccount;
+
+  const handleChangePagePersonalSell = (event, newPage) => {
+    setPagePersonalSell(newPage);
+  };
+
+  const handleChangeRowsPerPagePersonalSell = (event) => {
+    setRowsPerPagePersonalSell(parseInt(event.target.value, 10));
+    setPagePersonalSell(0);
   };
 
   const connectWallet = async () => {
@@ -303,42 +342,7 @@ export default function BGTMarketApp() {
         setStatus("Gửi giao dịch mua... Vui lòng xác nhận trên MetaMask.");
         const receipt = await tx.wait();
         setStatus("Tạo lệnh mua thành công!");
-      } else if (orderType === "Sell") {
-        if (!premiumRate || !selectedVault || isNaN(premiumRate)) {
-          setStatus("Vui lòng nhập premium rate và chọn vault.");
-          return;
-        }
-
-        const premiumRateIn = (+premiumRate * 10000) / 100 + 10000;
-        const nodeId = BigInt(2);
-        const rewardVault = selectedVault; // Sử dụng selectedVault thay vì REWARD_VAULT_ADDRESS
-
-        const rewardVaultContract = new ethers.Contract(
-          rewardVault, // Thay đổi từ REWARD_VAULT_ADDRESS thành rewardVault
-          REWARD_VAULT_ABI,
-          signer
-        );
-        setStatus(
-          "Đang cấp quyền operator... Vui lòng xác nhận trên MetaMask."
-        );
-        const operatorTx = await rewardVaultContract.setOperator(
-          CONTRACT_ADDRESS
-        );
-        await operatorTx.wait();
-        setStatus("Đã cấp quyền operator!");
-
-        const tx = await contract.openSellBgtOrder(
-          rewardVault, // Thay đổi từ REWARD_VAULT_ADDRESS thành rewardVault
-          BigInt(premiumRateIn),
-          nodeId,
-          {
-            gasLimit: 500000,
-          }
-        );
-        setStatus("Gửi giao dịch bán... Vui lòng xác nhận trên MetaMask.");
-        const receipt = await tx.wait();
-        setStatus("Tạo lệnh bán thành công!");
-      } else if (orderType === "Sell") {
+      } else {
         if (!premiumRate || !selectedVault || isNaN(premiumRate)) {
           setStatus("Vui lòng nhập premium rate và chọn vault.");
           return;
@@ -347,10 +351,9 @@ export default function BGTMarketApp() {
         const premiumRateIn = (+premiumRate * 10000) / 100 + 10000;
         const nodeId = BigInt(2);
         const rewardVault = selectedVault;
-
         const rewardVaultContract = new ethers.Contract(
-          REWARD_VAULT_ADDRESS,
-          REWARD_VAULT_ABI,
+          rewardVault,
+          VAULT_ABI,
           signer
         );
         setStatus(
@@ -363,7 +366,7 @@ export default function BGTMarketApp() {
         setStatus("Đã cấp quyền operator!");
 
         const tx = await contract.openSellBgtOrder(
-          REWARD_VAULT_ADDRESS,
+          rewardVault,
           BigInt(premiumRateIn),
           nodeId,
           {
@@ -424,6 +427,10 @@ export default function BGTMarketApp() {
 
   const fillBuyOrder = async (orderId, vault) => {
     try {
+      if (vault === "") {
+        console.log("Vault have never been chosen");
+        return
+      }
       const contract = new ethers.Contract(
         CONTRACT_ADDRESS,
         CONTRACT_ABI,
@@ -529,11 +536,10 @@ export default function BGTMarketApp() {
         }}
       >
         <img
-          src="/src/assets/iconwallet.png" // Đường dẫn đến icon ví trong thư mục src/assets
+          src="/src/assets/iconwallet.png"
           alt="wallet icon"
           style={{ width: "40px", height: "40px", marginRight: "10px" }}
         />
-
         {account
           ? ` ${account.slice(0, 6)}...${account.slice(38, 42)}`
           : "Connect Wallet"}
@@ -617,7 +623,6 @@ export default function BGTMarketApp() {
         <span className="label-1">About TTT</span>
       </Button>
 
-      {/* button Delegate for TTT */}
       <Button
         variant="text"
         onClick={() => {
@@ -648,8 +653,6 @@ export default function BGTMarketApp() {
       >
         <span className="label-1">Delegate for TTT</span>
       </Button>
-
-      {/* Form Tạo Lệnh (Đã chỉnh sửa giao diện phần Mua BGT) */}
 
       <Container
         sx={{
@@ -704,6 +707,7 @@ export default function BGTMarketApp() {
                   <TableCell>Hash</TableCell>
                   <TableCell>Time</TableCell>
                   <TableCell>Action</TableCell>
+                  <TableCell>Vault</TableCell>
                 </TableRow>
               )}
             </TableHead>
@@ -724,8 +728,8 @@ export default function BGTMarketApp() {
                         {+order.unclaimed_bgt < 0.01
                           ? "<0.01"
                           : +order.unclaimed_bgt == 0
-                          ? "0.00"
-                          : (+order.unclaimed_bgt).toFixed(3)}
+                            ? "0.00"
+                            : (+order.unclaimed_bgt).toFixed(3)}
                       </TableCell>
                       <TableCell>{(order.markup - 10000) / 100}%</TableCell>
                       <TableCell>
@@ -756,12 +760,12 @@ export default function BGTMarketApp() {
                           onClick={
                             activeTab === "Buy"
                               ? () =>
-                                  fillSellOrder(order.order_id, order.amount)
+                                fillSellOrder(order.order_id, order.amount)
                               : () =>
-                                  fillBuyOrder(
-                                    order.order_id,
-                                    "0xc2baa8443cda8ebe51a640905a8e6bc4e1f9872c"
-                                  )
+                                fillBuyOrder(
+                                  order.order_id,
+                                  "0xc2baa8443cda8ebe51a640905a8e6bc4e1f9872c"
+                                )
                           }
                           sx={{ borderRadius: "12px" }}
                         >
@@ -798,17 +802,69 @@ export default function BGTMarketApp() {
                           onClick={
                             activeTab === "Buy"
                               ? () =>
-                                  fillSellOrder(order.order_id, order.amount)
+                                fillSellOrder(order.order_id, order.amount)
                               : () =>
-                                  fillBuyOrder(
-                                    order.order_id,
-                                    "0xc2baa8443cda8ebe51a640905a8e6bc4e1f9872c"
-                                  )
+                                fillBuyOrder(
+                                  order.order_id,
+                                  vaultForFill
+                                )
                           }
                           sx={{ borderRadius: "12px" }}
                         >
                           {activeTab === "Buy" ? "Buy" : "Sell"}
                         </Button>
+                      </TableCell>
+                      <TableCell>
+                        <FormControl fullWidth>
+                          <InputLabel id={`dropdown-label-${order.order_id}`}>Choose Vault</InputLabel>
+                          <Select
+                            labelId={`dropdown-label-${order.order_id}`}
+                            value={vaultForFill}
+                            onChange={(e) => setVaultForFill(e.target.value)}
+                            label="Choose Vault"
+                          >
+                            <MenuItem value="">
+                              <em> Choose Vault</em>
+                            </MenuItem>
+                            {vaultsWithBalance.map((vault) =>
+                              vault.name !== "" && vault.icon !== "" && vault.bgtBalance > 0 ? (
+                                <MenuItem
+                                  key={vault.reward_vault}
+                                  value={vault.reward_vault}
+                                  disabled={parseFloat(vault.bgtBalance) <= 0}
+                                >
+                                  <Box
+                                    sx={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      justifyContent: "space-between",
+                                      width: "100%",
+                                    }}
+                                  >
+                                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                                      <img
+                                        src={vault.icon}
+                                        alt={vault.name}
+                                        style={{
+                                          width: "20px",
+                                          height: "20px",
+                                          marginRight: "8px",
+                                        }}
+                                      />
+                                      {vault.name}
+                                    </Box>
+                                    <Typography
+                                      variant="body2"
+                                      sx={{ color: "text.secondary" }}
+                                    >
+                                      ({vault.bgtBalance} BGT)
+                                    </Typography>
+                                  </Box>
+                                </MenuItem>
+                              ) : null
+                            )}
+                          </Select>
+                        </FormControl>
                       </TableCell>
                     </TableRow>
                   )
@@ -831,7 +887,7 @@ export default function BGTMarketApp() {
       {/* Form Tạo Lệnh (Đã chỉnh sửa giao diện phần Mua BGT) */}
       <Container
         sx={{
-          width: "400px",
+          width: "600px",
           bgcolor: "black",
           opacity: "0.8",
           borderRadius: "50px",
@@ -902,10 +958,6 @@ export default function BGTMarketApp() {
                   color: "black",
                   borderRadius: "999px",
                 },
-                // "&:hover": {
-                //   backgroundColor: "#FFEA00",
-                //   color: "black", mua máy mới
-                // },
               },
             }}
           >
@@ -1200,7 +1252,7 @@ export default function BGTMarketApp() {
                     }}
                     value={premiumRate}
                     onChange={(e) => setPremiumRate(e.target.value)}
-                    // placeholder="ví dụ: 10 cho 110%"
+                  // placeholder="ví dụ: 10 cho 110%"
                   />
                   {/* giá bera sell */}
                   <Typography
@@ -1305,130 +1357,156 @@ export default function BGTMarketApp() {
               </>
             )
           ) : orderType === "Buy Orders" ? (
-            <TableContainer component={Paper}>
-              {account === "" ? (
-                <Table sx={{ minWidth: 200 }} aria-label="order table">
-                  <TableBody>
-                    <TableRow>
-                      <TableCell>Please connect your wallet</TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
-              ) : buyOrdersAccount === null ? (
-                <Table sx={{ minWidth: 200 }} aria-label="order table">
-                  <TableBody>
-                    <TableRow>
-                      <TableCell>No order</TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
-              ) : (
-                <Table sx={{ maxWidth: 200 }} aria-label="order table">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>BGT Price</TableCell>
-                      <TableCell>BGT Amount</TableCell>
-                      <TableCell>Type</TableCell>
-                      <TableCell>Action</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {displayBuyOrdersAccount.map((order, index) => (
-                      <TableRow key={order.order_id || index}>
-                        <TableCell>{order.price}</TableCell>
-                        <TableCell>
-                          {(+order.filled_bgt_amount).toFixed(2)}/
-                          {(+order.bgt_amount).toFixed(2)}
-                        </TableCell>
-                        <TableCell style={{ color: "green" }}>Buy</TableCell>
-                        <TableCell>
-                          <Button
-                            variant="contained"
-                            color={order.state === 1 ? "success" : "gray"}
-                            disabled={order.state === 1 ? false : true}
-                            onClick={() => closeOrder(order.order_id, "Buy")}
-                            sx={{ borderRadius: "12px" }}
-                          >
-                            {order.state === 1 ? "Close" : "Closed"}
-                          </Button>
-                        </TableCell>
+            <>
+              <TableContainer component={Paper}>
+                {account === "" ? (
+                  <Table sx={{ minWidth: 200 }} aria-label="order table">
+                    <TableBody>
+                      <TableRow>
+                        <TableCell>Please connect your wallet</TableCell>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
-            </TableContainer>
+                    </TableBody>
+                  </Table>
+                ) : buyOrdersAccount === null ? (
+                  <Table sx={{ minWidth: 200 }} aria-label="order table">
+                    <TableBody>
+                      <TableRow>
+                        <TableCell>No order</TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                ) : (
+                  <Table sx={{ maxWidth: 200 }} aria-label="order table">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>BGT Price</TableCell>
+                        <TableCell>BGT Amount</TableCell>
+                        <TableCell>Type</TableCell>
+                        <TableCell>Action</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {displayBuyOrdersAccount.map((order, index) => (
+                        <TableRow key={order.order_id || index}>
+                          <TableCell>{order.price}</TableCell>
+                          <TableCell>
+                            {(+order.filled_bgt_amount).toFixed(2)}/
+                            {(+order.bgt_amount).toFixed(2)}
+                          </TableCell>
+                          <TableCell style={{ color: "green" }}>Buy</TableCell>
+                          <TableCell>
+                            <Button
+                              variant="contained"
+                              color={order.state === 1 ? "success" : "gray"}
+                              disabled={order.state === 1 ? false : true}
+                              onClick={() => closeOrder(order.order_id, "Buy")}
+                              sx={{ borderRadius: "12px" }}
+                            >
+                              {order.state === 1 ? "Close" : "Closed"}
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </TableContainer>
+              <TablePagination
+                style={{ backgroundColor: "white" }}
+                component="div"
+                count={totalPersonalBuy}
+                page={pagePersonalBuy}
+                onPageChange={handleChangePagePersonalBuy}
+                rowsPerPage={rowsPerPagePersonalBuy}
+                onRowsPerPageChange={handleChangeRowsPerPagePersonalBuy}
+                rowsPerPageOptions={[5, 10, 25]}
+              />
+            </>
           ) : (
-            <TableContainer component={Paper}>
-              {account === "" ? (
-                <Table sx={{ minWidth: 200 }} aria-label="order table">
-                  <TableBody>
-                    <TableRow>
-                      <TableCell>Please connect your wallet</TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
-              ) : sellOrdersAccount === null ? (
-                <Table sx={{ minWidth: 200 }} aria-label="order table">
-                  <TableBody>
-                    <TableRow>
-                      <TableCell>No order</TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
-              ) : (
-                <Table sx={{ maxWidth: 100 }} aria-label="order table">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Premium</TableCell>
-                      <TableCell>Sold Amount</TableCell>
-                      <TableCell>Profit</TableCell>
-                      <TableCell>Action</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {displaySellOrdersAccount.map((order, index) => (
-                      <TableRow key={order.order_id || index}>
-                        <TableCell>{(order.markup - 10000) / 100}%</TableCell>
-                        <TableCell>
-                          {+order.unclaimed_bgt < 0.01
-                            ? "<0.01"
-                            : +order.unclaimed_bgt == 0
-                            ? "0.00"
-                            : (+order.unclaimed_bgt).toFixed(3)}
-                        </TableCell>
-                        <TableCell>
-                          {(
-                            beraPrice *
-                            +order.unclaimed_bgt *
-                            (1 + (order.markup - 10000) / 100 / 100)
-                          ).toFixed(2)}
-                        </TableCell>
-                        <TableCell>
-                          <Button
-                            variant="contained"
-                            color={order.state === 1 ? "success" : "gray"}
-                            disabled={order.state === 1 ? false : true}
-                            onClick={() => closeOrder(order.order_id, "Sell")}
-                            sx={{ borderRadius: "12px" }}
-                          >
-                            {order.state === 1 ? "Close" : "Closed"}
-                          </Button>
-                        </TableCell>
+            <>
+              <TableContainer component={Paper}>
+                {account === "" ? (
+                  <Table sx={{ minWidth: 200 }} aria-label="order table">
+                    <TableBody>
+                      <TableRow>
+                        <TableCell>Please connect your wallet</TableCell>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
-            </TableContainer>
+                    </TableBody>
+                  </Table>
+                ) : sellOrdersAccount === null ? (
+                  <Table sx={{ minWidth: 200 }} aria-label="order table">
+                    <TableBody>
+                      <TableRow>
+                        <TableCell>No order</TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                ) : (
+                  <Table sx={{ maxWidth: 100 }} aria-label="order table">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Premium</TableCell>
+                        <TableCell>Sold Amount</TableCell>
+                        <TableCell>Profit</TableCell>
+                        <TableCell>Action</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {displaySellOrdersAccount.map((order, index) => (
+                        <TableRow key={order.order_id || index}>
+                          <TableCell>{(order.markup - 10000) / 100}%</TableCell>
+                          <TableCell>
+                            {+order.unclaimed_bgt < 0.01
+                              ? "<0.01"
+                              : +order.unclaimed_bgt == 0
+                                ? "0.00"
+                                : (+order.unclaimed_bgt).toFixed(3)}
+                          </TableCell>
+                          <TableCell>
+                            {(
+                              beraPrice *
+                              +order.unclaimed_bgt *
+                              (1 + (order.markup - 10000) / 100 / 100)
+                            ).toFixed(2)}
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              variant="contained"
+                              color={order.state === 1 ? "success" : "gray"}
+                              disabled={order.state === 1 ? false : true}
+                              onClick={() => closeOrder(order.order_id, "Sell")}
+                              sx={{ borderRadius: "12px" }}
+                            >
+                              {order.state === 1 ? "Close" : "Closed"}
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </TableContainer>
+              <TablePagination
+                style={{ backgroundColor: "white" }}
+                component="div"
+                count={totalPersonalSell}
+                page={pagePersonalSell}
+                onPageChange={handleChangePagePersonalSell}
+                rowsPerPage={rowsPerPagePersonalSell}
+                onRowsPerPageChange={handleChangeRowsPerPagePersonalSell}
+                rowsPerPageOptions={[5, 10, 25]}
+              />
+            </>
           )}
         </Box>
-        {status && (
-          <Typography variant="body2" color="text.secondary" textAlign="center">
-            {status}
-          </Typography>
-        )}
-      </Container>
-    </Box>
+        {
+          status && (
+            <Typography variant="body2" color="text.secondary" textAlign="center">
+              {status}
+            </Typography>
+          )
+        }
+      </Container >
+    </Box >
   );
 }
