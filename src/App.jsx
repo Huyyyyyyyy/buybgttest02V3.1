@@ -808,7 +808,7 @@ export default function BGTMarketApp() {
                           (1 + (order.markup - 10000) / 100 / 100)
                         ).toFixed(2)}
                         <img
-                          src="https://dr9rfdtcol2ay.cloudfront.net/assets/HONEY.png"  // Thay bằng đường dẫn đúng tới ảnh trong thư mục assets
+                          src="https://dr9rfdtcol2ay.cloudfront.net/assets/honey.png"  // Thay bằng đường dẫn đúng tới ảnh trong thư mục assets
                           alt="icon"
                           style={{ width: 22, height: 22, marginLeft: 7, verticalAlign: "middle" }}  // Điều chỉnh kích thước ảnh và khoảng cách
                         />
@@ -896,7 +896,7 @@ export default function BGTMarketApp() {
                       <TableCell sx={{ color: "#fff", fontFamily: "'Itim', cursive", fontSize: "20px", border: 0 }}>
                         {(+order.amount).toFixed(2)}
                         <img
-                          src="https://dr9rfdtcol2ay.cloudfront.net/assets/HONEY.png"  // Thay bằng đường dẫn đúng tới ảnh trong thư mục assets
+                          src="https://dr9rfdtcol2ay.cloudfront.net/assets/honey.png"  // Thay bằng đường dẫn đúng tới ảnh trong thư mục assets
                           alt="icon"
                           style={{ width: 22, height: 22, marginLeft: 7, verticalAlign: "middle" }}  // Điều chỉnh kích thước ảnh và khoảng cách
                         />
