@@ -9,6 +9,7 @@ import {
   Select,
   MenuItem,
   InputLabel,
+  Link,
   FormControl,
   Tabs,
   Tab,
@@ -657,9 +658,9 @@ export default function BGTMarketApp() {
       <Container
         sx={{
           width: "1500px",
-          bgcolor: "white",
+          bgcolor: "black",
           opacity: "0.8",
-          borderRadius: "20px",
+          borderRadius: "50px",
           p: 4,
           boxShadow: "0 8px 30px rgba(0,0,0,0.1)",
           mt: 21,
@@ -667,55 +668,116 @@ export default function BGTMarketApp() {
         }}
       >
         <Typography
-          variant="h5"
+          variant="h2"
           fontWeight="bold"
           gutterBottom
           textAlign="center"
+          sx={{
+            fontFamily: "'Itim', cursive", // Phông chữ Itim
+            color: "#fff", // Màu chữ tối
+            display: "flex", // Sắp xếp chữ và ảnh theo hàng ngang
+            alignItems: "center", // Canh giữa chữ và ảnh
+            justifyContent: "center", // Canh giữa cả ảnh và chữ
+          }}
         >
-          Thị Trường BGT
+          <img
+            src="/src/assets/BGT.png" // Đường dẫn ảnh từ thư mục public
+            alt="BGT Icon"
+            style={{ width: 70, height: 70, marginRight: 8 }} // Điều chỉnh kích thước ảnh và khoảng cách
+          />
+          BGT Market
         </Typography>
 
-        <Tabs
+        <ToggleButtonGroup
           value={activeTab}
-          onChange={(e, newValue) => setActiveTab(newValue)}
-          centered
-          sx={{ mb: 3 }}
+          exclusive
+          onChange={(event, newValue) => setActiveTab(newValue)}
+          fullWidth
+          sx={{
+            mb: 3,
+            borderRadius: "12px",
+            backgroundColor: "black", // Nền input
+            "& .MuiToggleButton-root": {
+              fontFamily: "Itim, cursive", // Đổi phông chữ
+              fontWeight: "700",
+              fontSize: "20px",
+              color: "#fff",
+              border: "none", // Không viền
+              borderRadius: "12px", // Bo tròn
+              "&.Mui-selected": {
+                backgroundColor: "#FFEA00", // Nền vàng khi chọn
+                color: "black", // Chữ đen khi chọn
+              },
+            },
+          }}
         >
-          <Tab label="Mua BGT" value="Buy" />
-          <Tab label="Bán BGT" value="Sell" />
-        </Tabs>
+          <ToggleButton value="Buy">Buy BGT</ToggleButton>
+          <ToggleButton value="Sell">Sell BGT</ToggleButton>
+        </ToggleButtonGroup>
 
-        <TableContainer component={Paper}>
+        <TableContainer component={Paper} sx={{ bgcolor: "transparent", color: "#fff", fontFamily: "'Itim', cursive" }}>
           <Table sx={{ minWidth: 500 }} aria-label="order table">
+            {/* TableHead */}
             <TableHead>
-              {activeTab === "Buy" ? (
-                <TableRow>
-                  <TableCell>BGT Amount</TableCell>
-                  <TableCell>Premium</TableCell>
-                  <TableCell>Estimated to pay</TableCell>
-                  <TableCell>Address</TableCell>
-                  <TableCell>Hash</TableCell>
-                  <TableCell>Time</TableCell>
-                  <TableCell>Action</TableCell>
+              {activeTab === 'Buy' ? (
+                <TableRow sx={{ border: 0 }}>
+                  <TableCell sx={{ fontFamily: "'Itim', cursive", color: '#FFD700', fontWeight: 'bold', border: 0, fontSize: "20px" }}>
+                    BGT Amount
+                  </TableCell>
+                  <TableCell sx={{ fontFamily: "'Itim', cursive", color: '#FFD700', fontWeight: 'bold', border: 0, fontSize: "20px" }}>
+                    Premium
+                  </TableCell>
+                  <TableCell sx={{ fontFamily: "'Itim', cursive", color: '#FFD700', fontWeight: 'bold', border: 0, fontSize: "20px" }}>
+                    Estimated to pay
+                  </TableCell>
+                  <TableCell sx={{ fontFamily: "'Itim', cursive", color: '#FFD700', fontWeight: 'bold', border: 0, fontSize: "20px" }}>
+                    Address
+                  </TableCell>
+                  <TableCell sx={{ fontFamily: "'Itim', cursive", color: '#FFD700', fontWeight: 'bold', border: 0, fontSize: "20px" }}>
+                    Hash
+                  </TableCell>
+                  <TableCell sx={{ fontFamily: "'Itim', cursive", color: '#FFD700', fontWeight: 'bold', border: 0, fontSize: "20px" }}>
+                    Time
+                  </TableCell>
+                  <TableCell sx={{ fontFamily: "'Itim', cursive", color: '#FFD700', fontWeight: 'bold', border: 0, fontSize: "20px" }}>
+                    Action
+                  </TableCell>
                 </TableRow>
               ) : (
-                <TableRow>
-                  <TableCell>BGT Price</TableCell>
-                  <TableCell>BGT Amount</TableCell>
-                  <TableCell>Paid</TableCell>
-                  <TableCell>Address</TableCell>
-                  <TableCell>Hash</TableCell>
-                  <TableCell>Time</TableCell>
-                  <TableCell>Action</TableCell>
-                  <TableCell>Vault</TableCell>
+                <TableRow sx={{ border: 0 }}>
+                  <TableCell sx={{ fontFamily: "'Itim', cursive", color: '#FFD700', fontWeight: 'bold', border: 0, fontSize: "20px" }}>
+                    BGT Price
+                  </TableCell>
+                  <TableCell sx={{ fontFamily: "'Itim', cursive", color: '#FFD700', fontWeight: 'bold', border: 0, fontSize: "20px" }}>
+                    BGT Amount
+                  </TableCell>
+                  <TableCell sx={{ fontFamily: "'Itim', cursive", color: '#FFD700', fontWeight: 'bold', border: 0, fontSize: "20px" }}>
+                    Paid
+                  </TableCell>
+                  <TableCell sx={{ fontFamily: "'Itim', cursive", color: '#FFD700', fontWeight: 'bold', border: 0, fontSize: "20px" }}>
+                    Address
+                  </TableCell>
+                  <TableCell sx={{ fontFamily: "'Itim', cursive", color: '#FFD700', fontWeight: 'bold', border: 0, fontSize: "20px" }}>
+                    Hash
+                  </TableCell>
+                  <TableCell sx={{ fontFamily: "'Itim', cursive", color: '#FFD700', fontWeight: 'bold', border: 0, fontSize: "20px" }}>
+                    Time
+                  </TableCell>
+                  <TableCell sx={{ fontFamily: "'Itim', cursive", color: '#FFD700', fontWeight: 'bold', border: 0, fontSize: "20px" }}>
+                    Action
+                  </TableCell>
+                  <TableCell sx={{ fontFamily: "'Itim', cursive", color: '#FFD700', fontWeight: 'bold', border: 0, fontSize: "20px" }}>
+                    Vault
+                  </TableCell>
                 </TableRow>
               )}
             </TableHead>
+            {/* TableBody */}
             <TableBody>
               {account === "" || displayedOrders === null ? (
-                <TableRow>
-                  <TableCell>
-                    <span style={{ fontSize: "20px" }}>
+                <TableRow sx={{ border: 0 }}>
+                  <TableCell sx={{ border: 0 }}>
+                    <span style={{ fontSize: "24px", color: "#fff", fontFamily: "'Itim', cursive" }}>
                       Please connect your wallet
                     </span>
                   </TableCell>
@@ -723,44 +785,86 @@ export default function BGTMarketApp() {
               ) : (
                 displayedOrders.map((order, index) =>
                   activeTab === "Buy" ? (
-                    <TableRow key={order.order_id || index}>
-                      <TableCell>
+                    <TableRow key={order.order_id || index} sx={{ border: 0 }}>
+                      <TableCell sx={{ color: "#fff", fontFamily: "'Itim', cursive", fontSize: "20px", border: 0 }}>
                         {+order.unclaimed_bgt < 0.01
                           ? "<0.01"
                           : +order.unclaimed_bgt == 0
                             ? "0.00"
                             : (+order.unclaimed_bgt).toFixed(3)}
+                        <img
+                          src="/src/assets/iconBGT.png"  // Thay bằng đường dẫn đúng tới ảnh trong thư mục assets
+                          alt="icon"
+                          style={{ width: 35, height: 30, marginLeft: 7, verticalAlign: "middle" }}  // Điều chỉnh kích thước ảnh và khoảng cách
+                        />
                       </TableCell>
-                      <TableCell>{(order.markup - 10000) / 100}%</TableCell>
-                      <TableCell>
+                      <TableCell sx={{ color: "#fff", fontFamily: "'Itim', cursive", fontSize: "20px", border: 0 }}>
+                        {(order.markup - 10000) / 100}%
+                      </TableCell>
+                      <TableCell sx={{ color: "#fff", fontFamily: "'Itim', cursive", fontSize: "20px", border: 0 }}>
                         {(
                           beraPrice *
                           +order.unclaimed_bgt *
                           (1 + (order.markup - 10000) / 100 / 100)
                         ).toFixed(2)}
+                        <img
+                          src="/src/assets/HONEY.png"  // Thay bằng đường dẫn đúng tới ảnh trong thư mục assets
+                          alt="icon"
+                          style={{ width: 22, height: 22, marginLeft: 7, verticalAlign: "middle" }}  // Điều chỉnh kích thước ảnh và khoảng cách
+                        />
                       </TableCell>
-                      <TableCell>
+                      <TableCell sx={{ color: "#fff", fontFamily: "'Itim', cursive", fontSize: "20px", border: 0 }}>
                         {order.address.slice(0, 6)}...{order.address.slice(-4)}
                       </TableCell>
-                      <TableCell>
-                        {order.evm_tx_hash.slice(0, 6)}...
-                        {order.evm_tx_hash.slice(-4)}
+                      <TableCell sx={{ color: "#fff", fontFamily: "'Itim', cursive", fontSize: "20px", border: 0 }}>
+                        <a
+                          href={`https://berascan.com/tx/${order.evm_tx_hash}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ color: "#fff", textDecoration: "none" }}
+                        >
+                          {order.evm_tx_hash.slice(0, 6)}...{order.evm_tx_hash.slice(-4)}
+                        </a>
                       </TableCell>
-                      <TableCell>
-                        {(
-                          (Math.floor(Date.now() / 1000) - order.time) /
-                          86400
-                        ).toFixed(0)}{" "}
-                        days ago
+
+                      {/* time buy  */}
+                      <TableCell
+                        sx={{
+                          color: "#fff",
+                          fontFamily: "'Itim', cursive",
+                          fontSize: "20px",
+                          border: 0,
+                        }}
+                      >
+                        {(() => {
+                          const timeDiffInSeconds = Math.floor(Date.now() / 1000) - order.time; // Khoảng cách thời gian (giây)
+
+                          // Nếu thời gian nhỏ hơn 24 giờ (86400 giây), hiển thị giờ, phút, giây
+                          if (timeDiffInSeconds < 86400) {
+                            const hours = Math.floor(timeDiffInSeconds / 3600); // Số giờ
+                            const minutes = Math.floor((timeDiffInSeconds % 3600) / 60); // Số phút
+                            const seconds = timeDiffInSeconds % 60; // Số giây
+
+                            // Tạo chuỗi hiển thị
+                            let timeString = "";
+                            if (hours > 0) timeString += `${hours} hour${hours !== 1 ? "s" : ""} `;
+                            if (minutes > 0 || hours > 0) timeString += `${minutes} min${minutes !== 1 ? "s" : ""} `;
+                            timeString += `${seconds} sec${seconds !== 1 ? "s" : ""} ago`;
+
+                            return timeString;
+                          }
+
+                          // Nếu thời gian lớn hơn hoặc bằng 24 giờ, hiển thị số ngày
+                          return `${(timeDiffInSeconds / 86400).toFixed(0)} day${(timeDiffInSeconds / 86400).toFixed(0) !== "1" ? "s" : ""} ago`;
+                        })()}
                       </TableCell>
-                      <TableCell>
+                      <TableCell sx={{ border: 0 }}>
                         <Button
                           variant="contained"
                           color={activeTab === "Buy" ? "success" : "error"}
                           onClick={
                             activeTab === "Buy"
-                              ? () =>
-                                fillSellOrder(order.order_id, order.amount)
+                              ? () => fillSellOrder(order.order_id, order.amount)
                               : () =>
                                 fillBuyOrder(
                                   order.order_id,
@@ -774,57 +878,126 @@ export default function BGTMarketApp() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    <TableRow key={order.order_id || index}>
-                      <TableCell>${(+order.price).toFixed(2)}</TableCell>
-                      <TableCell>
+                    <TableRow key={order.order_id || index} sx={{ border: 0 }}>
+                      <TableCell sx={{ color: "#fff", fontFamily: "'Itim', cursive", fontSize: "20px", border: 0 }}>
+                        ${(+order.price).toFixed(2)}
+                      </TableCell>
+                      <TableCell sx={{ color: "#fff", fontFamily: "'Itim', cursive", fontSize: "20px", border: 0 }}>
                         {(+order.filled_bgt_amount).toFixed(2)}/
                         {(+order.bgt_amount).toFixed(2)}
+
+                        <img
+                          src="/src/assets/iconBGT.png"  // Thay bằng đường dẫn đúng tới ảnh trong thư mục assets
+                          alt="icon"
+                          style={{ width: 35, height: 30, marginLeft: 7, verticalAlign: "middle" }}  // Điều chỉnh kích thước ảnh và khoảng cách
+                        />
+
                       </TableCell>
-                      <TableCell>{(+order.amount).toFixed(2)}</TableCell>
-                      <TableCell>
+                      <TableCell sx={{ color: "#fff", fontFamily: "'Itim', cursive", fontSize: "20px", border: 0 }}>
+                        {(+order.amount).toFixed(2)}
+                        <img
+                          src="/src/assets/HONEY.png"  // Thay bằng đường dẫn đúng tới ảnh trong thư mục assets
+                          alt="icon"
+                          style={{ width: 22, height: 22, marginLeft: 7, verticalAlign: "middle" }}  // Điều chỉnh kích thước ảnh và khoảng cách
+                        />
+                      </TableCell>
+                      <TableCell sx={{ color: "#fff", fontFamily: "'Itim', cursive", fontSize: "20px", border: 0 }}>
                         {order.address.slice(0, 6)}...{order.address.slice(-4)}
                       </TableCell>
-                      <TableCell>
-                        {order.evm_tx_hash.slice(0, 6)}...
-                        {order.evm_tx_hash.slice(-4)}
+                      <TableCell sx={{ color: "#fff", fontFamily: "'Itim', cursive", fontSize: "20px", border: 0 }}>
+                        <a
+                          href={`https://berascan.com/tx/${order.evm_tx_hash}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ color: "#fff", textDecoration: "none" }}
+                        >
+                          {order.evm_tx_hash.slice(0, 6)}...{order.evm_tx_hash.slice(-4)}
+                        </a>
                       </TableCell>
-                      <TableCell>
-                        {(
-                          (Math.floor(Date.now() / 1000) - order.time) /
-                          86400
-                        ).toFixed(0)}{" "}
-                        days ago
+                      {/* time sell min hours */}
+                      <TableCell
+                        sx={{
+                          color: "#fff",
+                          fontFamily: "'Itim', cursive",
+                          fontSize: "20px",
+                          border: 0,
+                        }}
+                      >
+                        {(() => {
+                          const timeDiffInSeconds = Math.floor(Date.now() / 1000) - order.time; // Khoảng cách thời gian (giây)
+
+                          // Nếu thời gian nhỏ hơn 24 giờ (86400 giây), hiển thị giờ, phút, giây
+                          if (timeDiffInSeconds < 86400) {
+                            const hours = Math.floor(timeDiffInSeconds / 3600); // Số giờ
+                            const minutes = Math.floor((timeDiffInSeconds % 3600) / 60); // Số phút
+                            const seconds = timeDiffInSeconds % 60; // Số giây
+
+                            // Tạo chuỗi hiển thị
+                            let timeString = "";
+                            if (hours > 0) timeString += `${hours} hour${hours !== 1 ? "s" : ""} `;
+                            if (minutes > 0 || hours > 0) timeString += `${minutes} min${minutes !== 1 ? "s" : ""} `;
+                            timeString += `${seconds} sec${seconds !== 1 ? "s" : ""} ago`;
+
+                            return timeString;
+                          }
+
+                          // Nếu thời gian lớn hơn hoặc bằng 24 giờ, hiển thị số ngày
+                          return `${(timeDiffInSeconds / 86400).toFixed(0)} day${(timeDiffInSeconds / 86400).toFixed(0) !== "1" ? "s" : ""} ago`;
+                        })()}
                       </TableCell>
-                      <TableCell>
+                      <TableCell sx={{ border: 0 }}>
                         <Button
                           variant="contained"
                           color={activeTab === "Buy" ? "success" : "error"}
                           onClick={
                             activeTab === "Buy"
-                              ? () =>
-                                fillSellOrder(order.order_id, order.amount)
-                              : () =>
-                                fillBuyOrder(
-                                  order.order_id,
-                                  vaultForFill
-                                )
+                              ? () => fillSellOrder(order.order_id, order.amount)
+                              : () => fillBuyOrder(order.order_id, vaultForFill)
                           }
                           sx={{ borderRadius: "12px" }}
                         >
                           {activeTab === "Buy" ? "Buy" : "Sell"}
                         </Button>
                       </TableCell>
-                      <TableCell>
+                      <TableCell sx={{ border: 0 }}>
                         <FormControl fullWidth>
-                          <InputLabel id={`dropdown-label-${order.order_id}`}>Choose Vault</InputLabel>
+
+                          <InputLabel
+                            id={`dropdown-labelило-${order.order_id}`}
+                            sx={{ color: "#fff", fontFamily: "'Itim', cursive'" }} // Chữ trắng cho nhãn
+                          >
+                            💰
+                          </InputLabel>
+
                           <Select
                             labelId={`dropdown-label-${order.order_id}`}
                             value={vaultForFill}
                             onChange={(e) => setVaultForFill(e.target.value)}
                             label="Choose Vault"
+                            sx={{
+                              color: "#fff", // Chữ trắng cho giá trị được chọn
+                              bgcolor: "rgba(0, 0, 0, 0.1)", // Nền đen mờ (80% opacity)
+                              fontFamily: "'Itim', cursive'", // Phông chữ Itim
+                              '& .MuiSvgIcon-root': { color: "#fff" }, // Icon mũi tên trắng
+                              '& .MuiOutlinedInput-notchedOutline': { borderColor: "#fff" }, // Viền trắng
+                              '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: "#fff" }, // Viền trắng khi hover
+                              '& .MuiPaper-root': { bgcolor: "rgba(0, 0, 0, 1)" }, // Đảm bảo dropdown menu full đen
+                            }}
+                            MenuProps={{
+                              PaperProps: {
+                                sx: {
+                                  bgcolor: "rgba(0, 0, 0, 1)", // Nền đen đầy đủ cho dropdown
+                                  '& .MuiMenuItem-root': {
+                                    color: "#fff", // Chữ trắng cho tất cả các mục trong dropdown
+                                    bgcolor: "rgba(0, 0, 0, 1)", // Nền đen đầy đủ cho các mục
+                                    '&:hover': { bgcolor: "#333" }, // Hiệu ứng hover xám đậm
+                                  },
+                                },
+                              },
+                            }}
                           >
-                            <MenuItem value="">
-                              <em> Choose Vault</em>
+                            <MenuItem value="" sx={{ bgcolor: "rgba(0, 0, 0, 1)", color: "#fff" }}>
+                              <em style={{ color: "#fff", fontFamily: "'Itim', cursive'" }}>Choose Vault</em> {/* Chữ trắng cho mục mặc định */}
                             </MenuItem>
                             {vaultsWithBalance.map((vault) =>
                               vault.name !== "" && vault.icon !== "" && vault.bgtBalance > 0 ? (
@@ -832,6 +1005,12 @@ export default function BGTMarketApp() {
                                   key={vault.reward_vault}
                                   value={vault.reward_vault}
                                   disabled={parseFloat(vault.bgtBalance) <= 0}
+                                  sx={{
+                                    bgcolor: "rgba(0, 0, 0, 1)", // Nền đen đầy đủ cho các mục
+                                    color: "#fff", // Chữ trắng cho các mục
+                                    fontFamily: "'Itim', cursive'", // Phông chữ Itim
+                                    '&:hover': { bgcolor: "#333" } // Hiệu ứng hover xám đậm
+                                  }}
                                 >
                                   <Box
                                     sx={{
@@ -853,10 +1032,7 @@ export default function BGTMarketApp() {
                                       />
                                       {vault.name}
                                     </Box>
-                                    <Typography
-                                      variant="body2"
-                                      sx={{ color: "text.secondary" }}
-                                    >
+                                    <Typography variant="body2" sx={{ color: "#fff" }}> {/* Chữ trắng cho số dư */}
                                       ({vault.bgtBalance} BGT)
                                     </Typography>
                                   </Box>
@@ -881,6 +1057,27 @@ export default function BGTMarketApp() {
           rowsPerPage={rowsPerPage}
           onRowsPerPageChange={handleChangeRowsPerPage}
           rowsPerPageOptions={[5, 10, 25]}
+          sx={{
+            color: "#fff", // Màu chữ trắng cho tất cả các phần trong TablePagination
+            fontFamily: "'Itim', cursive", // Thay đổi phông chữ toàn bộ
+            '& .MuiTablePagination-caption': {
+              color: "#fff", // Màu chữ cho "Rows per page"
+              fontFamily: "'Itim', cursive", // Phông chữ cho phần "Rows per page"
+            },
+            '& .MuiTablePagination-selectLabel': {
+              color: "#fff", // Màu chữ cho nhãn "Rows per page:"
+              fontFamily: "'Itim', cursive", // Phông chữ cho nhãn "Rows per page:"
+            },
+            '& .MuiTablePagination-select': {
+              color: "#fff", // Màu chữ cho dropdown chọn số hàng
+              fontFamily: "'Itim', cursive", // Phông chữ cho dropdown
+            },
+            '& .MuiTablePagination-actions': {
+              color: "#fff", // Màu chữ cho các nút điều hướng (next, previous)
+              fontFamily: "'Itim', cursive", // Phông chữ cho nút điều hướng
+            },
+            textAlign: "center", // Căn giữa toàn bộ phần TablePagination
+          }}
         />
       </Container>
 
