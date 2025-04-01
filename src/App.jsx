@@ -478,7 +478,7 @@ export default function BGTMarketApp() {
       sx={{
         minHeight: "110vh",
         width: "100%",
-        backgroundImage: "url('../src/assets/bg.jpg')",
+        backgroundImage: "url('https://dr9rfdtcol2ay.cloudfront.net/assets/bg.jpg')",
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
@@ -489,7 +489,7 @@ export default function BGTMarketApp() {
       }}
     >
       <img
-        src="/src/assets/iconnetwork.png"
+        src="https://dr9rfdtcol2ay.cloudfront.net/assets/iconnetwork.png"
         alt="iconnetwork"
         style={{
           position: "absolute",
@@ -502,7 +502,7 @@ export default function BGTMarketApp() {
       ></img>
 
       <img
-        src="/src/assets/icongreen.png"
+        src="https://dr9rfdtcol2ay.cloudfront.net/assets/icongreen.png"
         alt="icongreen"
         style={{
           width: "12px",
@@ -537,7 +537,7 @@ export default function BGTMarketApp() {
         }}
       >
         <img
-          src="/src/assets/iconwallet.png"
+          src="https://dr9rfdtcol2ay.cloudfront.net/assets/iconwallet.png"
           alt="wallet icon"
           style={{ width: "40px", height: "40px", marginRight: "10px" }}
         />
@@ -583,7 +583,7 @@ export default function BGTMarketApp() {
       </Button>
 
       <img
-        src="/src/assets/TTT.png"
+        src="https://dr9rfdtcol2ay.cloudfront.net/assets/TTT.png"
         alt="logo"
         style={{
           width: "100px",
@@ -1117,7 +1117,7 @@ export default function BGTMarketApp() {
               }}
             >
               <img
-                src="/src/assets/iconbera.png"
+                src="https://dr9rfdtcol2ay.cloudfront.net/assets/iconbera.png"
                 alt="BERA"
                 style={{ width: 25, height: 25, marginRight: 8 }}
               />
@@ -1232,7 +1232,7 @@ export default function BGTMarketApp() {
                       }}
                     >
                       <img
-                        src="/src/assets/iconbera.png"
+                        src="https://dr9rfdtcol2ay.cloudfront.net/assets/iconbera.png"
                         alt="BERA Price"
                         style={{ width: 23, height: 23, marginRight: 8 }}
                       />
@@ -1323,7 +1323,7 @@ export default function BGTMarketApp() {
                   </Typography>
                   <Box sx={{ display: "flex", alignItems: "center" }}>
                     <img
-                      src="/src/assets/honey.png"
+                      src="https://dr9rfdtcol2ay.cloudfront.net/assets/honey.png"
                       alt="Honey"
                       style={{ width: 20, height: 20, marginRight: 4 }} // Giảm khoảng cách giữa icon và giá trị
                     />
@@ -1461,7 +1461,7 @@ export default function BGTMarketApp() {
                     }}
                   >
                     <img
-                      src="/src/assets/iconbera.png"
+                      src="https://dr9rfdtcol2ay.cloudfront.net/assets/iconbera.png"
                       alt="BERA Price"
                       style={{ width: 23, height: 23, marginRight: 8 }}
                     />
