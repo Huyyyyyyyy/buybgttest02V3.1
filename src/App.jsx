@@ -706,7 +706,7 @@ export default function BGTMarketApp() {
             }}
           >
             <img
-              src="/src/assets/iconwallet.png"
+              src="https://dr9rfdtcol2ay.cloudfront.net/assets/iconwallet.png"
               alt="wallet icon"
               style={{
                 width:{ xs: "60%", sm: "80%", md: "100%" },
