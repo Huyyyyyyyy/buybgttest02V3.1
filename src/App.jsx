@@ -30,6 +30,13 @@ import {
   allVaultsList,
 } from "../src/apis/comon";
 
+import Drawer from "@mui/material/Drawer";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import ListItemButton from "@mui/material/ListItemButton";
+import ListItemText from "@mui/material/ListItemText";
+import MenuIcon from "@mui/icons-material/Menu";
+
 // Địa chỉ hợp đồng và ABI (giữ nguyên)
 const CONTRACT_ADDRESS = "0x5f8a463334E29635Bdaca9c01B76313395462430";
 const HONEY_TOKEN_ADDRESS = "0xFCBD14DC51f0A4d49d5E53C2E0950e0bC26d0Dce";
@@ -76,9 +83,14 @@ export default function BGTMarketApp() {
   const [vaultsWithBalance, setVaultsWithBalance] = useState(rewardVaults);
 
 
+  //status of open buy/sell order
+  const [buyStatus, setBuyStatus] = useState("Success");
+  const [sellStatus, setSellStatus] = useState("Success");
 
 
-  
+
+
+
   const fetchBgtBalances = async (signer) => {
     try {
       const updatedVaults = await Promise.all(
@@ -138,6 +150,7 @@ export default function BGTMarketApp() {
         type: 1,
       };
       const response = await allOrderListAccount(params);
+      console.log(response);
       setBuyOrdersAccount(response.list);
       setTotalPersonalBuy(response.total);
     } catch (error) {
@@ -194,10 +207,10 @@ export default function BGTMarketApp() {
   };
 
   useEffect(() => {
-    if (account !== "") {
+    if (account !== "" && orderType == "Buy Orders") {
       fetchAccountBuyOrders(pagePersonalBuy, rowsPerPagePersonalBuy);
     }
-  }, [pagePersonalBuy, rowsPerPagePersonalBuy, account]);
+  }, [pagePersonalBuy, rowsPerPagePersonalBuy, account, orderType]);
   const displayBuyOrdersAccount = buyOrdersAccount;
 
   const handleChangePagePersonalBuy = (event, newPage) => {
@@ -210,10 +223,10 @@ export default function BGTMarketApp() {
   };
 
   useEffect(() => {
-    if (account !== "") {
+    if (account !== "" && orderType == "Sell Orders") {
       fetchAccountSellOrders(pagePersonalSell, rowsPerPagePersonalSell);
     }
-  }, [pagePersonalSell, rowsPerPagePersonalSell, account]);
+  }, [pagePersonalSell, rowsPerPagePersonalSell, account, orderType]);
   const displaySellOrdersAccount = sellOrdersAccount;
 
   const handleChangePagePersonalSell = (event, newPage) => {
@@ -323,8 +336,10 @@ export default function BGTMarketApp() {
       );
 
       if (orderType === "Buy") {
+        setBuyStatus("Processing");
         if (!amount || !price || isNaN(amount) || isNaN(price)) {
           setStatus("Vui lòng nhập đúng số lượng và giá.");
+          setBuyStatus("Success");
           return;
         }
 
@@ -349,9 +364,13 @@ export default function BGTMarketApp() {
         setStatus("Gửi giao dịch mua... Vui lòng xác nhận trên MetaMask.");
         const receipt = await tx.wait();
         setStatus("Tạo lệnh mua thành công!");
+        await fetchAccountBuyOrders(pagePersonalBuy, rowsPerPagePersonalBuy);
+        setBuyStatus("Success")
       } else {
+        setSellStatus("Processing");
         if (!premiumRate || !selectedVault || isNaN(premiumRate)) {
           setStatus("Vui lòng nhập premium rate và chọn vault.");
+          setSellStatus("Success");
           return;
         }
 
@@ -383,6 +402,8 @@ export default function BGTMarketApp() {
         setStatus("Gửi giao dịch bán... Vui lòng xác nhận trên MetaMask.");
         const receipt = await tx.wait();
         setStatus("Tạo lệnh bán thành công!");
+        await fetchAccountSellOrders(pagePersonalBuy, rowsPerPagePersonalBuy);
+        setSellStatus("Success");
       }
     } catch (error) {
       console.error("Create order failed:", error);
@@ -399,6 +420,8 @@ export default function BGTMarketApp() {
       } else {
         setStatus(`Lỗi: ${error.message}`);
       }
+      setBuyStatus("Success");
+      setSellStatus("Success");
     }
   };
 
@@ -467,8 +490,12 @@ export default function BGTMarketApp() {
 
       if (orderType === "Buy") {
         tx = await contract.closeBuyBgtOrder(id);
+        await tx.wait();
+        await fetchAccountBuyOrders(pagePersonalBuy, rowsPerPagePersonalBuy);
       } else if (orderType === "Sell") {
         tx = await contract.closeSellBgtOrder(id);
+        await tx.wait();
+        await fetchAccountSellOrders(pagePersonalBuy, rowsPerPagePersonalBuy);
       }
 
       setStatus("Đang hủy lệnh...");
@@ -479,57 +506,129 @@ export default function BGTMarketApp() {
       setStatus(`Lỗi khi hủy lệnh ${orderType === "Buy" ? "mua" : "bán"}`);
     }
   };
+
+
+  // Drawer
+  const [state, setState] = React.useState({
+    left: false,
+  });
+
+  const toggleDrawer = (anchor, open) => (event) => {
+    if (
+      event.type === "keydown" &&
+      (event.key === "Tab" || event.key === "Shift")
+    ) {
+      return;
+    }
+
+    setState({ ...state, [anchor]: open });
+  };
+
+  // Hàm để điều hướng khi click vào các mục và mở trang trong tab mới
+  const handleClick = (url) => {
+    window.open(url, "_blank"); // Mở trang trong tab mới
+  };
+
+  // Menu ở Drawer
+  const list = (anchor) => (
+    <Box
+      sx={{ width: anchor === "left" ? 250 : "auto" }}
+      role="presentation"
+      onClick={toggleDrawer(anchor, false)}
+      onKeyDown={toggleDrawer(anchor, false)}
+    >
+      <List>
+        {["Market", "About TTT", "Delegate for TTT"].map((text, index) => (
+          <ListItem key={text} disablePadding>
+            <ListItemButton
+              onClick={() =>
+                handleClick(
+                  text === "Market"
+                    ? "https://bgt.zone"
+                    : text === "About TTT"
+                      ? "https://tienthuattoan.com/"
+                      : "https://hub.berachain.com/validators/0x89884fc95abcb82736d768fc8ad4fdf4cb2112496974ae05440d835d0e93216643ae212b365fb6d9d2501d76d0925ef3/"
+                )
+              }
+            >
+              <ListItemText primary={text} />
+            </ListItemButton>
+          </ListItem>
+        ))}
+      </List>
+    </Box>
+  );
+
   return (
     <Box
       // background ở đây
       sx={{
         minHeight: "100vh",
-        maxWidth:{xs:"100%"},
-        
+        maxWidth: { xs: "100%" },
+
         display: "flex",
         alignItems: "center",
-        flexWrap:"wrap",
-        // justifyContent: { xs: "center", sm: "space-between" },
+        flexWrap: "wrap",
         gap: 4,
-        flexDirection: { xs: "row", md: "row",lg:"column" },
-        // overflowX:"hidden",
+        flexDirection: { xs: "row", md: "row", lg: "column" },
       }}
     >
-    
       {/* header */}
+
       <Box
         sx={{
           width: "100%",
-          maxWidth: { xs: "100%", md: "1700px"},
+          // maxWidth: { xs: "100%", md: "1700px" },
           display: "flex",
+          justifyContent: { xs: "space-between", sm: "space-between", md: "space-between" },
           alignItems: "center",
           marginLeft: "auto",
           marginRight: "auto",
           padding: "30px 0",
         }}
       >
+        {/* width dưới 768px */}
+        <Box sx={{ display: { md: "flex", lg: "none" }, width: { md: "15%", } }}>
+          {["left"].map((anchor) => (
+            <React.Fragment key={anchor}>
+              <Button onClick={toggleDrawer(anchor, true)}>
+                <MenuIcon sx={{ fontSize: "30px", color: "black", background: "#FFEA00", borderRadius: "10px", padding: "15px" }} />
+              </Button>
+              <Drawer
+                anchor={anchor}
+                open={state[anchor]}
+                onClose={toggleDrawer(anchor, false)}
+              >
+                {list(anchor)}
+              </Drawer>
+            </React.Fragment>
+          ))}
+        </Box>
         {/* box logo cty */}
-        <Box sx={{ width: "10%" }}>
+        <Box
+          sx={{
+            width: { md: "30%", lg: "10%" },
+            display: "flex",
+            justifyContent: "center",
+          }}
+        >
           <img
             src="https://dr9rfdtcol2ay.cloudfront.net/assets/TTT.png"
             alt="logo"
             style={{
               width: "90px",
               height: "90px",
-              // position: "absolute",
-              // top: "5%",
-              // left: "9%",
+
             }}
           />
         </Box>
-
         {/* box button */}
         <Box
           sx={{
-            display: "flex",
+            display: { xs: "none", md: "none", lg: "flex" },
             alignItems: "center",
-            // justifyContent: "space-around",
-            width: "70%",
+            justifyContent: "space-between",
+            width: { md: "60%", lg: "70%" },
           }}
         >
           {/* Button market */}
@@ -537,18 +636,16 @@ export default function BGTMarketApp() {
             variant="text"
             sx={{
               color: "#fff",
-              fontSize: "32px",
+              fontSize: { sm: "28px", md: "32px" },
               width: "30%",
               height: "18px",
               textShadow: `
-                  -1px -1px 0 black,
-                  1px -1px 0 black,
-                  -1px 1px 0 black,
-                  1px 1px 0 black
-                `,
-              // position: "absolute",
-              // top: "76px",
-              // left: "389px",
+                -1px -1px 0 black,
+                1px -1px 0 black,
+                -1px 1px 0 black,
+                1px 1px 0 black
+              `,
+
               fontFamily: "Itim, cursive",
               fontWeight: "400",
               textTransform: "none",
@@ -583,11 +680,11 @@ export default function BGTMarketApp() {
               fontSize: "32px",
               width: "30%",
               textShadow: `
-        -1px -1px 0 black,
-        1px -1px 0 black,
-        -1px 1px 0 black,
-        1px 1px 0 black
-       `,
+      -1px -1px 0 black,
+      1px -1px 0 black,
+      -1px 1px 0 black,
+      1px 1px 0 black
+     `,
               // position: "absolute",
               // top: "76px",
               // left: "600px",
@@ -617,11 +714,11 @@ export default function BGTMarketApp() {
               fontSize: "32px",
               width: "40%",
               textShadow: `
-        -1px -1px 0 black,
-        1px -1px 0 black,
-        -1px 1px 0 black,
-        1px 1px 0 black
-       `,
+      -1px -1px 0 black,
+      1px -1px 0 black,
+      -1px 1px 0 black,
+      1px 1px 0 black
+     `,
               // position: "absolute",
               // top: "76px",
               // right: "700px",
@@ -638,20 +735,20 @@ export default function BGTMarketApp() {
             <span className="label-1">Delegate for TTT</span>
           </Button>
         </Box>
-
         {/* box connect-wallet */}
         <Box
           sx={{
-            width: "20%",
+            width: { md: "30%", lg: "20%" },
             display: "flex",
             alignItems: "center",
-            justifyContent: "space-evenly",
+            justifyContent: { md: "flex-end", lg: "space-around" },
           }}
         >
           <Box
             sx={{
               position: "relative",
               paddingTop: "10px",
+              display: { xs: "none", sm: "none", md: "none", lg: "none", xl: "flex" },
             }}
           >
             {/* icon bera */}
@@ -662,9 +759,9 @@ export default function BGTMarketApp() {
                 // position: "absolute",
                 // top: "58px",
                 // right: "430px",
-                width:{md:"80%",lg:"100%"},
+                width: { md: "80%", lg: "100%" },
                 height: "60px",
-                maxWidth:"60px",
+                maxWidth: "60px",
                 objectFit: "cover",
               }}
             ></img>
@@ -681,6 +778,7 @@ export default function BGTMarketApp() {
               }}
             />
           </Box>
+
           <Button
             variant="outlined"
             onClick={connectWallet}
@@ -700,7 +798,7 @@ export default function BGTMarketApp() {
 
               "&:hover": {
                 backgroundColor: "#fff",
-                color:"#000",
+                color: "#000",
                 border: "1px solid black",
               },
             }}
@@ -709,37 +807,41 @@ export default function BGTMarketApp() {
               src="https://dr9rfdtcol2ay.cloudfront.net/assets/iconwallet.png"
               alt="wallet icon"
               style={{
-                width:{ xs: "60%", sm: "80%", md: "100%" },
+                width: { xs: "60%", sm: "80%", md: "100%" },
                 maxWidth: "40px",
                 // height: "40px",
                 marginRight: "10px",
               }}
             />
-            {account
-              ? ` ${account.slice(0, 6)}...${account.slice(38, 42)}`
-              : "Connect Wallet"}
+            <Box sx={{}}>
+              {account
+                ? ` ${account.slice(0, 6)}...${account.slice(38, 42)}`
+                : "Connect Wallet"}
+            </Box>
+
           </Button>
         </Box>
       </Box>
 
       {/* Box value */}
       <Box
-      sx={{
-        display:"flex",
-        flexWrap:"wrap",
-        justifyContent:"space-evenly",
-      }}
+        sx={{
+          display: "flex",
+          flexWrap: "wrap",
+          justifyContent: "space-evenly",
+          width: "100%",
+        }}
       >
         {/* Form hiển thị value */}
         <Container
           sx={{
-            maxWidth: { xs: "80%", md: "90%",lg:"60%",},
+            maxWidth: { xs: "80%", md: "90%", lg: "60%" },
             bgcolor: "black",
             opacity: "0.8",
             borderRadius: "50px",
             p: 4,
             boxShadow: "0 8px 30px rgba(0,0,0,0.1)",
-            mb:10,
+            mb: 10,
             color: "black",
           }}
         >
@@ -768,27 +870,39 @@ export default function BGTMarketApp() {
           <ToggleButtonGroup
             value={activeTab}
             exclusive
-            onChange={(event, newValue) => setActiveTab(newValue)}
+            onChange={(event, newValue) => {
+              if (newValue != null) {
+                console.log(activeTab);
+                setActiveTab(newValue)
+              }
+            }}
             fullWidth
             sx={{
-              mb: 3,
-              borderRadius: "12px",
-              backgroundColor: "black", // Nền input
+              mb: 2,
+              fontFamily: "Itim, cursive",
+              borderRadius: "999px",
+              padding: "4px",
               "& .MuiToggleButton-root": {
-                fontFamily: "Itim, cursive", // Đổi phông chữ
-                fontWeight: "700",
-                fontSize: { xs: "14px", sm: "16px", md: "20px" },
+                flex: 1,
+                fontWeight: "bold",
+                fontSize: "1rem",
                 color: "#fff",
-                border: "none", // Không viền
-                borderRadius: "12px", // Bo tròn
+                border: "none",
+                borderRadius: "999px",
+                textTransform: "none",
+                fontFamily: "Itim, cursive",
+                transition: "all 0.05s",
                 "&.Mui-selected": {
-                  backgroundColor: "#FFEA00", // Nền vàng khi chọn
-                  color: "black", // Chữ đen khi chọn
+                  backgroundColor: "#FFEA00",
+                  color: "black",
+                  borderRadius: "999px",
                 },
-                "&.Mui-hover":{
-                  
-                  color: "#FFF",
-                }
+                "&:hover": {
+                  backgroundColor: "inherit", // Keeps non-selected buttons unchanged on hover
+                },
+                "&.Mui-selected:hover": {
+                  backgroundColor: "#FFEA00", // Keeps selected buttons #FFEA00 on hover
+                },
               },
             }}
           >
@@ -1014,8 +1128,8 @@ export default function BGTMarketApp() {
                           {+order.unclaimed_bgt < 0.01
                             ? "<0.01"
                             : +order.unclaimed_bgt == 0
-                            ? "0.00"
-                            : (+order.unclaimed_bgt).toFixed(3)}
+                              ? "0.00"
+                              : (+order.unclaimed_bgt).toFixed(3)}
                           <img
                             src="https://dr9rfdtcol2ay.cloudfront.net/assets/iconBGT.png" // Thay bằng đường dẫn đúng tới ảnh trong thư mục assets
                             alt="icon"
@@ -1117,16 +1231,13 @@ export default function BGTMarketApp() {
                               // Tạo chuỗi hiển thị
                               let timeString = "";
                               if (hours > 0)
-                                timeString += `${hours} hour${
-                                  hours !== 1 ? "s" : ""
-                                } `;
+                                timeString += `${hours} hour${hours !== 1 ? "s" : ""
+                                  } `;
                               if (minutes > 0 || hours > 0)
-                                timeString += `${minutes} min${
-                                  minutes !== 1 ? "s" : ""
-                                } `;
-                              timeString += `${seconds} sec${
-                                seconds !== 1 ? "s" : ""
-                              } ago`;
+                                timeString += `${minutes} min${minutes !== 1 ? "s" : ""
+                                  } `;
+                              timeString += `${seconds} sec${seconds !== 1 ? "s" : ""
+                                } ago`;
 
                               return timeString;
                             }
@@ -1134,11 +1245,10 @@ export default function BGTMarketApp() {
                             // Nếu thời gian lớn hơn hoặc bằng 24 giờ, hiển thị số ngày
                             return `${(timeDiffInSeconds / 86400).toFixed(
                               0
-                            )} day${
-                              (timeDiffInSeconds / 86400).toFixed(0) !== "1"
-                                ? "s"
-                                : ""
-                            } ago`;
+                            )} day${(timeDiffInSeconds / 86400).toFixed(0) !== "1"
+                              ? "s"
+                              : ""
+                              } ago`;
                           })()}
                         </TableCell>
                         <TableCell sx={{ border: 0 }}>
@@ -1148,12 +1258,12 @@ export default function BGTMarketApp() {
                             onClick={
                               activeTab === "Buy"
                                 ? () =>
-                                    fillSellOrder(order.order_id, order.amount)
+                                  fillSellOrder(order.order_id, order.amount)
                                 : () =>
-                                    fillBuyOrder(
-                                      order.order_id,
-                                      "0xc2baa8443cda8ebe51a640905a8e6bc4e1f9872c"
-                                    )
+                                  fillBuyOrder(
+                                    order.order_id,
+                                    "0xc2baa8443cda8ebe51a640905a8e6bc4e1f9872c"
+                                  )
                             }
                             sx={{ borderRadius: "12px" }}
                           >
@@ -1272,16 +1382,13 @@ export default function BGTMarketApp() {
                               // Tạo chuỗi hiển thị
                               let timeString = "";
                               if (hours > 0)
-                                timeString += `${hours} hour${
-                                  hours !== 1 ? "s" : ""
-                                } `;
+                                timeString += `${hours} hour${hours !== 1 ? "s" : ""
+                                  } `;
                               if (minutes > 0 || hours > 0)
-                                timeString += `${minutes} min${
-                                  minutes !== 1 ? "s" : ""
-                                } `;
-                              timeString += `${seconds} sec${
-                                seconds !== 1 ? "s" : ""
-                              } ago`;
+                                timeString += `${minutes} min${minutes !== 1 ? "s" : ""
+                                  } `;
+                              timeString += `${seconds} sec${seconds !== 1 ? "s" : ""
+                                } ago`;
 
                               return timeString;
                             }
@@ -1289,11 +1396,10 @@ export default function BGTMarketApp() {
                             // Nếu thời gian lớn hơn hoặc bằng 24 giờ, hiển thị số ngày
                             return `${(timeDiffInSeconds / 86400).toFixed(
                               0
-                            )} day${
-                              (timeDiffInSeconds / 86400).toFixed(0) !== "1"
-                                ? "s"
-                                : ""
-                            } ago`;
+                            )} day${(timeDiffInSeconds / 86400).toFixed(0) !== "1"
+                              ? "s"
+                              : ""
+                              } ago`;
                           })()}
                         </TableCell>
                         <TableCell sx={{ border: 0 }}>
@@ -1303,9 +1409,9 @@ export default function BGTMarketApp() {
                             onClick={
                               activeTab === "Buy"
                                 ? () =>
-                                    fillSellOrder(order.order_id, order.amount)
+                                  fillSellOrder(order.order_id, order.amount)
                                 : () =>
-                                    fillBuyOrder(order.order_id, vaultForFill)
+                                  fillBuyOrder(order.order_id, vaultForFill)
                             }
                             sx={{ borderRadius: "12px" }}
                           >
@@ -1376,8 +1482,8 @@ export default function BGTMarketApp() {
                               </MenuItem>
                               {vaultsWithBalance.map((vault) =>
                                 vault.name !== "" &&
-                                vault.icon !== "" &&
-                                vault.bgtBalance > 0 ? (
+                                  vault.icon !== "" &&
+                                  vault.bgtBalance > 0 ? (
                                   <MenuItem
                                     key={vault.reward_vault}
                                     value={vault.reward_vault}
@@ -1471,8 +1577,8 @@ export default function BGTMarketApp() {
         {/* Form Tạo Lệnh (Đã chỉnh sửa giao diện phần Mua BGT) */}
         <Container
           sx={{
-            maxWidth: { xs: "80%", md: "90%",lg:"34%",},
-            height:"100%",
+            maxWidth: { xs: "80%", md: "90%", lg: "34%" },
+            height: "100%",
             bgcolor: "black",
             opacity: "0.8",
             borderRadius: "50px",
@@ -1635,41 +1741,40 @@ export default function BGTMarketApp() {
                   </Box>
 
                   <Box
-                  sx={{
-                    mb: 2,
-                    display: "flex",
-                    gap: 1,
-                    justifyContent: "center",
-                  }}
-                >
-                  {percentagePresets.map((percentage) => (
-                    <Button
-                      key={percentage}
-                      variant={selectedPercentage === percentage ? "contained" : "outlined"} // Thay đổi variant dựa trên trạng thái
-                      onClick={() => {
-                        setSelectedPercentage(percentage); // Cập nhật state khi nhấp
-                        setAmountByPercentage(percentage); // Gọi hàm tính toán số lượng
-                      }}
-                      sx={{
-                        borderRadius: "12px",
-                        minWidth: "60px",
-                        fontSize: "1rem",
-                        fontFamily: "'Itim', cursive",
-                        color: selectedPercentage === percentage ? "#000" : "#fff", // Màu chữ đen khi chọn, trắng khi không chọn
-                        backgroundColor: selectedPercentage === percentage ? "#ffca28" : "transparent", // Màu nền vàng khi chọn
-                        borderColor: "#fff", // Viền trắng mặc định
-                        "&:hover": {
-                          backgroundColor: "#ffca28", // Màu nền khi hover
-                          color: "#000", // Màu chữ khi hover
-                          borderColor: "#ffca28", // Viền khi hover
-                        },
-                      }}
-                    >
-                      {percentage}%
-                    </Button>
-                  ))}
-                </Box>
-
+                    sx={{
+                      mb: 2,
+                      display: "flex",
+                      gap: 1,
+                      justifyContent: "center",
+                    }}
+                  >
+                    {percentagePresets.map((percentage) => (
+                      <Button
+                        key={percentage}
+                        variant={selectedPercentage === percentage ? "contained" : "outlined"} // Thay đổi variant dựa trên trạng thái
+                        onClick={() => {
+                          setSelectedPercentage(percentage); // Cập nhật state khi nhấp
+                          setAmountByPercentage(percentage); // Gọi hàm tính toán số lượng
+                        }}
+                        sx={{
+                          borderRadius: "12px",
+                          minWidth: "60px",
+                          fontSize: "1rem",
+                          fontFamily: "'Itim', cursive",
+                          color: selectedPercentage === percentage ? "#000" : "#fff", // Màu chữ đen khi chọn, trắng khi không chọn
+                          backgroundColor: selectedPercentage === percentage ? "#ffca28" : "transparent", // Màu nền vàng khi chọn
+                          borderColor: "#fff", // Viền trắng mặc định
+                          "&:hover": {
+                            backgroundColor: "#ffca28", // Màu nền khi hover
+                            color: "#000", // Màu chữ khi hover
+                            borderColor: "#ffca28", // Viền khi hover
+                          },
+                        }}
+                      >
+                        {percentage}%
+                      </Button>
+                    ))}
+                  </Box>
 
                   <Box sx={{ mb: 2 }}>
                     <Typography
@@ -1738,39 +1843,35 @@ export default function BGTMarketApp() {
                     }}
                   >
                     <Typography variant="body2">
-                    HONEY in walletwallet  (≥10.00)
+                      Honey to pay (≥ 10.00)
                     </Typography>
                     {/* <Typography variant="body2">0 🐻</Typography> */}
-                  </Box>
-                  <Box
-                    sx={{
-                      mb: 2,
-                      display: "flex",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    {/* <Typography variant="body2">Ước tính nhận được</Typography>
-                    <Typography variant="body2">0 🐻</Typography> */}
                   </Box>
                   <Button
                     variant="contained"
                     color="success"
                     onClick={createOrder}
                     fullWidth
+                    disabled={(buyStatus === "Success") ? false : true}
                     sx={{
                       py: 1.5,
                       fontWeight: "bold",
                       borderRadius: "20px",
                       boxShadow: "0 4px 12px rgba(0, 128, 0, 0.3)",
                       fontFamily: "'Itim', cursive",
-                      fontSize: "1.2rem", // Kích thước chữ
-                      backgroundColor: "#14ED00", // Màu nền của nút
+                      fontSize: "1.2rem",
+                      backgroundColor: "#14ED00",
                       "&:hover": {
-                        backgroundColor: "#12C900", // Màu khi hover (có thể điều chỉnh)
+                        backgroundColor: "#12C900",
+                      },
+                      "&.Mui-disabled": {
+                        backgroundColor: "#14ED00",
+                        opacity: 1,
+                        color: "#fff",
                       },
                     }}
                   >
-                    Buy
+                    {buyStatus === "Success" ? "Buy" : "Processing..."}
                   </Button>
                 </>
               )
@@ -1868,7 +1969,7 @@ export default function BGTMarketApp() {
                       }}
                       value={premiumRate}
                       onChange={(e) => setPremiumRate(e.target.value)}
-                      // placeholder="ví dụ: 10 cho 110%"
+                    // placeholder="ví dụ: 10 cho 110%"
                     />
                     {/* giá bera sell */}
                     <Typography
@@ -1941,7 +2042,7 @@ export default function BGTMarketApp() {
                     }}
                   >
                     <Typography variant="body2">
-                    BGT in vault  (≥0.01)
+                      BGT in vault (≥0.01)
                     </Typography>
                     {/* <Typography variant="body2">0 🐻</Typography> */}
                   </Box>
@@ -1961,6 +2062,7 @@ export default function BGTMarketApp() {
                     color="success"
                     onClick={createOrder}
                     fullWidth
+                    disabled={(sellStatus === "Success") ? false : true}
                     sx={{
                       py: 1.5,
                       fontWeight: "bold",
@@ -1972,9 +2074,14 @@ export default function BGTMarketApp() {
                       "&:hover": {
                         backgroundColor: "#FF3333", // Màu khi hover (có thể điều chỉnh)
                       },
+                      "&.Mui-disabled": {
+                        backgroundColor: "#FF0000",
+                        opacity: 1,
+                        color: "#fff",
+                      },
                     }}
                   >
-                    Sell
+                    {sellStatus === "Success" ? "Sell" : "Processing..."}
                   </Button>
                 </>
               )
@@ -2045,7 +2152,7 @@ export default function BGTMarketApp() {
                   onPageChange={handleChangePagePersonalBuy}
                   rowsPerPage={rowsPerPagePersonalBuy}
                   onRowsPerPageChange={handleChangeRowsPerPagePersonalBuy}
-                  rowsPerPageOptions={[5, 10, 25, 50, 100]}
+                  rowsPerPageOptions={[5, 10, 25, 50,]}
                 />
               </>
             ) : (
@@ -2087,8 +2194,8 @@ export default function BGTMarketApp() {
                               {+order.unclaimed_bgt < 0.01
                                 ? "<0.01"
                                 : +order.unclaimed_bgt == 0
-                                ? "0.00"
-                                : (+order.unclaimed_bgt).toFixed(3)}
+                                  ? "0.00"
+                                  : (+order.unclaimed_bgt).toFixed(3)}
                             </TableCell>
                             <TableCell>
                               {(
@@ -2140,8 +2247,7 @@ export default function BGTMarketApp() {
           )}
         </Container>
       </Box>
-      
-    </Box>
+    </Box >
   );
 
 
