@@ -9,10 +9,7 @@ import {
   Select,
   MenuItem,
   InputLabel,
-  Link,
   FormControl,
-  Tabs,
-  Tab,
   Table,
   TableBody,
   TableCell,
@@ -37,13 +34,13 @@ import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 import MenuIcon from "@mui/icons-material/Menu";
 
-// Địa chỉ hợp đồng và ABI (giữ nguyên)
-const CONTRACT_ADDRESS = "0x5f8a463334E29635Bdaca9c01B76313395462430";
-const HONEY_TOKEN_ADDRESS = "0xFCBD14DC51f0A4d49d5E53C2E0950e0bC26d0Dce";
-
-import CONTRACT_ABI from "../src/ct.json";
-import HONEY_ABI from "../src/honey_ct.json";
-import VAULT_ABI from "../src/vault_abi.json";
+import {
+  HEY_BGT_CONTRACT,
+  HEY_BGT_CONTRACT_ADDRESS,
+  HONEY_CONTRACT,
+  HONEY_CONTRACT_ADDRESS,
+  VAULT_CONTRACT,
+} from "./const/const";
 
 export default function BGTMarketApp() {
   const [account, setAccount] = useState("");
@@ -82,14 +79,12 @@ export default function BGTMarketApp() {
   const percentagePresets = [10, 50, 100, 1000];
   const [vaultsWithBalance, setVaultsWithBalance] = useState(rewardVaults);
 
-
   //status of open buy/sell order
   const [buyStatus, setBuyStatus] = useState("Success");
   const [sellStatus, setSellStatus] = useState("Success");
 
 
-
-
+  
 
   const fetchBgtBalances = async (signer) => {
     try {
@@ -97,7 +92,7 @@ export default function BGTMarketApp() {
         rewardVaults.map(async (vault) => {
           const vaultContract = new ethers.Contract(
             vault.reward_vault,
-            VAULT_ABI,
+            VAULT_CONTRACT,
             signer
           );
           let bgtBalance;
@@ -248,6 +243,7 @@ export default function BGTMarketApp() {
       //bera- chainid
       const decimalChainId = 80094;
       const hexChainId = "0x" + decimalChainId.toString(16);
+      console.log(hexChainId);
       await window.ethereum.request({
         method: "wallet_switchEthereumChain",
         params: [{ chainId: hexChainId }],
@@ -261,8 +257,8 @@ export default function BGTMarketApp() {
       setBeraBalance(ethers.formatUnits(balance, 18));
 
       const contract = new ethers.Contract(
-        CONTRACT_ADDRESS,
-        CONTRACT_ABI,
+        HEY_BGT_CONTRACT_ADDRESS,
+        HEY_BGT_CONTRACT,
         signer
       );
       await getBeraPrice(contract);
@@ -275,7 +271,11 @@ export default function BGTMarketApp() {
 
   const loadBalance = async (signer) => {
     try {
-      const honey = new ethers.Contract(HONEY_TOKEN_ADDRESS, HONEY_ABI, signer);
+      const honey = new ethers.Contract(
+        HONEY_CONTRACT_ADDRESS,
+        HONEY_CONTRACT,
+        signer
+      );
       const honeyBal = await honey.balanceOf(account);
       setHoneyBalance(ethers.formatUnits(honeyBal.toString(), 18));
     } catch (err) {
@@ -288,7 +288,11 @@ export default function BGTMarketApp() {
     try {
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
-      return new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+      return new ethers.Contract(
+        HEY_BGT_CONTRACT_ADDRESS,
+        HEY_BGT_CONTRACT,
+        signer
+      );
     } catch (err) {
       console.error("Get contract error:", err);
       throw new Error("Không thể khởi tạo hợp đồng.");
@@ -331,7 +335,7 @@ export default function BGTMarketApp() {
       const signer = await provider.getSigner();
       const contract = new ethers.Contract(
         CONTRACT_ADDRESS,
-        CONTRACT_ABI,
+        HEY_BGT_CONTRACT,
         signer
       );
 
@@ -349,12 +353,15 @@ export default function BGTMarketApp() {
         const nodeId = BigInt(2);
 
         const honey = new ethers.Contract(
-          HONEY_TOKEN_ADDRESS,
-          HONEY_ABI,
+          HONEY_CONTRACT_ADDRESS,
+          HONEY_CONTRACT,
           signer
         );
 
-        const approveTx = await honey.approve(CONTRACT_ADDRESS, amountIn);
+        const approveTx = await honey.approve(
+          HEY_BGT_CONTRACT_ADDRESS,
+          amountIn
+        );
         await approveTx.wait();
         setStatus("Đã cấp quyền HONEY!");
 
@@ -365,7 +372,7 @@ export default function BGTMarketApp() {
         const receipt = await tx.wait();
         setStatus("Tạo lệnh mua thành công!");
         await fetchAccountBuyOrders(pagePersonalBuy, rowsPerPagePersonalBuy);
-        setBuyStatus("Success")
+        setBuyStatus("Success");
       } else {
         setSellStatus("Processing");
         if (!premiumRate || !selectedVault || isNaN(premiumRate)) {
@@ -386,7 +393,7 @@ export default function BGTMarketApp() {
           "Đang cấp quyền operator... Vui lòng xác nhận trên MetaMask."
         );
         const operatorTx = await rewardVaultContract.setOperator(
-          CONTRACT_ADDRESS
+          CONTRACHEY_BGT_CONTRACT_ADDRESST_ADDRESS
         );
         await operatorTx.wait();
         setStatus("Đã cấp quyền operator!");
@@ -410,7 +417,7 @@ export default function BGTMarketApp() {
       if (error.code === "ACTION_REJECTED" || error.code === 4001) {
         setStatus("Giao dịch bị từ chối: Bạn đã hủy giao dịch trên MetaMask.");
       } else if (error.code === "CALL_EXCEPTION" && error.data) {
-        const iface = new ethers.Interface(CONTRACT_ABI);
+        const iface = new ethers.Interface(HEY_BGT_CONTRACT);
         try {
           const decoded = iface.parseError(error.data);
           setStatus(`Giao dịch bị từ chối: ${decoded.name} ${decoded.args}`);
@@ -428,14 +435,18 @@ export default function BGTMarketApp() {
   const fillSellOrder = async (orderId, amount) => {
     try {
       const contract = new ethers.Contract(
-        CONTRACT_ADDRESS,
-        CONTRACT_ABI,
+        HEY_BGT_CONTRACT_ADDRESS,
+        HEY_BGT_CONTRACT,
         signer
       );
 
-      const honey = new ethers.Contract(HONEY_TOKEN_ADDRESS, HONEY_ABI, signer);
+      const honey = new ethers.Contract(
+        HONEY_CONTRACT_ADDRESS,
+        HONEY_CONTRACT,
+        signer
+      );
       const approveTx = await honey.approve(
-        CONTRACT_ADDRESS,
+        HEY_BGT_CONTRACT_ADDRESS,
         ethers.parseUnits("9999999", 18)
       );
       await approveTx.wait();
@@ -459,11 +470,11 @@ export default function BGTMarketApp() {
     try {
       if (vault === "") {
         console.log("Vault have never been chosen");
-        return
+        return;
       }
       const contract = new ethers.Contract(
-        CONTRACT_ADDRESS,
-        CONTRACT_ABI,
+        HEY_BGT_CONTRACT_ADDRESS,
+        HEY_BGT_CONTRACT,
         signer
       );
 
@@ -507,7 +518,6 @@ export default function BGTMarketApp() {
     }
   };
 
-
   // Drawer
   const [state, setState] = React.useState({
     left: false,
@@ -546,8 +556,8 @@ export default function BGTMarketApp() {
                   text === "Market"
                     ? "https://bgt.zone"
                     : text === "About TTT"
-                      ? "https://tienthuattoan.com/"
-                      : "https://hub.berachain.com/validators/0x89884fc95abcb82736d768fc8ad4fdf4cb2112496974ae05440d835d0e93216643ae212b365fb6d9d2501d76d0925ef3/"
+                    ? "https://tienthuattoan.com/"
+                    : "https://hub.berachain.com/validators/0x89884fc95abcb82736d768fc8ad4fdf4cb2112496974ae05440d835d0e93216643ae212b365fb6d9d2501d76d0925ef3/"
                 )
               }
             >
@@ -580,7 +590,11 @@ export default function BGTMarketApp() {
           width: "100%",
           // maxWidth: { xs: "100%", md: "1700px" },
           display: "flex",
-          justifyContent: { xs: "space-between", sm: "space-between", md: "space-between" },
+          justifyContent: {
+            xs: "space-between",
+            sm: "space-between",
+            md: "space-between",
+          },
           alignItems: "center",
           marginLeft: "auto",
           marginRight: "auto",
@@ -588,11 +602,19 @@ export default function BGTMarketApp() {
         }}
       >
         {/* width dưới 768px */}
-        <Box sx={{ display: { md: "flex", lg: "none" }, width: { md: "15%", } }}>
+        <Box sx={{ display: { md: "flex", lg: "none" }, width: { md: "15%" } }}>
           {["left"].map((anchor) => (
             <React.Fragment key={anchor}>
               <Button onClick={toggleDrawer(anchor, true)}>
-                <MenuIcon sx={{ fontSize: "30px", color: "black", background: "#FFEA00", borderRadius: "10px", padding: "15px" }} />
+                <MenuIcon
+                  sx={{
+                    fontSize: "30px",
+                    color: "black",
+                    background: "#FFEA00",
+                    borderRadius: "10px",
+                    padding: "15px",
+                  }}
+                />
               </Button>
               <Drawer
                 anchor={anchor}
@@ -618,7 +640,6 @@ export default function BGTMarketApp() {
             style={{
               width: "90px",
               height: "90px",
-
             }}
           />
         </Box>
@@ -748,7 +769,13 @@ export default function BGTMarketApp() {
             sx={{
               position: "relative",
               paddingTop: "10px",
-              display: { xs: "none", sm: "none", md: "none", lg: "none", xl: "flex" },
+              display: {
+                xs: "none",
+                sm: "none",
+                md: "none",
+                lg: "none",
+                xl: "flex",
+              },
             }}
           >
             {/* icon bera */}
@@ -818,7 +845,6 @@ export default function BGTMarketApp() {
                 ? ` ${account.slice(0, 6)}...${account.slice(38, 42)}`
                 : "Connect Wallet"}
             </Box>
-
           </Button>
         </Box>
       </Box>
@@ -873,7 +899,7 @@ export default function BGTMarketApp() {
             onChange={(event, newValue) => {
               if (newValue != null) {
                 console.log(activeTab);
-                setActiveTab(newValue)
+                setActiveTab(newValue);
               }
             }}
             fullWidth
@@ -1128,8 +1154,8 @@ export default function BGTMarketApp() {
                           {+order.unclaimed_bgt < 0.01
                             ? "<0.01"
                             : +order.unclaimed_bgt == 0
-                              ? "0.00"
-                              : (+order.unclaimed_bgt).toFixed(3)}
+                            ? "0.00"
+                            : (+order.unclaimed_bgt).toFixed(3)}
                           <img
                             src="https://dr9rfdtcol2ay.cloudfront.net/assets/iconBGT.png" // Thay bằng đường dẫn đúng tới ảnh trong thư mục assets
                             alt="icon"
@@ -1231,13 +1257,16 @@ export default function BGTMarketApp() {
                               // Tạo chuỗi hiển thị
                               let timeString = "";
                               if (hours > 0)
-                                timeString += `${hours} hour${hours !== 1 ? "s" : ""
-                                  } `;
+                                timeString += `${hours} hour${
+                                  hours !== 1 ? "s" : ""
+                                } `;
                               if (minutes > 0 || hours > 0)
-                                timeString += `${minutes} min${minutes !== 1 ? "s" : ""
-                                  } `;
-                              timeString += `${seconds} sec${seconds !== 1 ? "s" : ""
-                                } ago`;
+                                timeString += `${minutes} min${
+                                  minutes !== 1 ? "s" : ""
+                                } `;
+                              timeString += `${seconds} sec${
+                                seconds !== 1 ? "s" : ""
+                              } ago`;
 
                               return timeString;
                             }
@@ -1245,10 +1274,11 @@ export default function BGTMarketApp() {
                             // Nếu thời gian lớn hơn hoặc bằng 24 giờ, hiển thị số ngày
                             return `${(timeDiffInSeconds / 86400).toFixed(
                               0
-                            )} day${(timeDiffInSeconds / 86400).toFixed(0) !== "1"
-                              ? "s"
-                              : ""
-                              } ago`;
+                            )} day${
+                              (timeDiffInSeconds / 86400).toFixed(0) !== "1"
+                                ? "s"
+                                : ""
+                            } ago`;
                           })()}
                         </TableCell>
                         <TableCell sx={{ border: 0 }}>
@@ -1258,12 +1288,12 @@ export default function BGTMarketApp() {
                             onClick={
                               activeTab === "Buy"
                                 ? () =>
-                                  fillSellOrder(order.order_id, order.amount)
+                                    fillSellOrder(order.order_id, order.amount)
                                 : () =>
-                                  fillBuyOrder(
-                                    order.order_id,
-                                    "0xc2baa8443cda8ebe51a640905a8e6bc4e1f9872c"
-                                  )
+                                    fillBuyOrder(
+                                      order.order_id,
+                                      "0xc2baa8443cda8ebe51a640905a8e6bc4e1f9872c"
+                                    )
                             }
                             sx={{ borderRadius: "12px" }}
                           >
@@ -1382,13 +1412,16 @@ export default function BGTMarketApp() {
                               // Tạo chuỗi hiển thị
                               let timeString = "";
                               if (hours > 0)
-                                timeString += `${hours} hour${hours !== 1 ? "s" : ""
-                                  } `;
+                                timeString += `${hours} hour${
+                                  hours !== 1 ? "s" : ""
+                                } `;
                               if (minutes > 0 || hours > 0)
-                                timeString += `${minutes} min${minutes !== 1 ? "s" : ""
-                                  } `;
-                              timeString += `${seconds} sec${seconds !== 1 ? "s" : ""
-                                } ago`;
+                                timeString += `${minutes} min${
+                                  minutes !== 1 ? "s" : ""
+                                } `;
+                              timeString += `${seconds} sec${
+                                seconds !== 1 ? "s" : ""
+                              } ago`;
 
                               return timeString;
                             }
@@ -1396,10 +1429,11 @@ export default function BGTMarketApp() {
                             // Nếu thời gian lớn hơn hoặc bằng 24 giờ, hiển thị số ngày
                             return `${(timeDiffInSeconds / 86400).toFixed(
                               0
-                            )} day${(timeDiffInSeconds / 86400).toFixed(0) !== "1"
-                              ? "s"
-                              : ""
-                              } ago`;
+                            )} day${
+                              (timeDiffInSeconds / 86400).toFixed(0) !== "1"
+                                ? "s"
+                                : ""
+                            } ago`;
                           })()}
                         </TableCell>
                         <TableCell sx={{ border: 0 }}>
@@ -1409,9 +1443,9 @@ export default function BGTMarketApp() {
                             onClick={
                               activeTab === "Buy"
                                 ? () =>
-                                  fillSellOrder(order.order_id, order.amount)
+                                    fillSellOrder(order.order_id, order.amount)
                                 : () =>
-                                  fillBuyOrder(order.order_id, vaultForFill)
+                                    fillBuyOrder(order.order_id, vaultForFill)
                             }
                             sx={{ borderRadius: "12px" }}
                           >
@@ -1482,8 +1516,8 @@ export default function BGTMarketApp() {
                               </MenuItem>
                               {vaultsWithBalance.map((vault) =>
                                 vault.name !== "" &&
-                                  vault.icon !== "" &&
-                                  vault.bgtBalance > 0 ? (
+                                vault.icon !== "" &&
+                                vault.bgtBalance > 0 ? (
                                   <MenuItem
                                     key={vault.reward_vault}
                                     value={vault.reward_vault}
@@ -1751,7 +1785,11 @@ export default function BGTMarketApp() {
                     {percentagePresets.map((percentage) => (
                       <Button
                         key={percentage}
-                        variant={selectedPercentage === percentage ? "contained" : "outlined"} // Thay đổi variant dựa trên trạng thái
+                        variant={
+                          selectedPercentage === percentage
+                            ? "contained"
+                            : "outlined"
+                        } // Thay đổi variant dựa trên trạng thái
                         onClick={() => {
                           setSelectedPercentage(percentage); // Cập nhật state khi nhấp
                           setAmountByPercentage(percentage); // Gọi hàm tính toán số lượng
@@ -1761,8 +1799,12 @@ export default function BGTMarketApp() {
                           minWidth: "60px",
                           fontSize: "1rem",
                           fontFamily: "'Itim', cursive",
-                          color: selectedPercentage === percentage ? "#000" : "#fff", // Màu chữ đen khi chọn, trắng khi không chọn
-                          backgroundColor: selectedPercentage === percentage ? "#ffca28" : "transparent", // Màu nền vàng khi chọn
+                          color:
+                            selectedPercentage === percentage ? "#000" : "#fff", // Màu chữ đen khi chọn, trắng khi không chọn
+                          backgroundColor:
+                            selectedPercentage === percentage
+                              ? "#ffca28"
+                              : "transparent", // Màu nền vàng khi chọn
                           borderColor: "#fff", // Viền trắng mặc định
                           "&:hover": {
                             backgroundColor: "#ffca28", // Màu nền khi hover
@@ -1852,7 +1894,7 @@ export default function BGTMarketApp() {
                     color="success"
                     onClick={createOrder}
                     fullWidth
-                    disabled={(buyStatus === "Success") ? false : true}
+                    disabled={buyStatus === "Success" ? false : true}
                     sx={{
                       py: 1.5,
                       fontWeight: "bold",
@@ -1969,7 +2011,7 @@ export default function BGTMarketApp() {
                       }}
                       value={premiumRate}
                       onChange={(e) => setPremiumRate(e.target.value)}
-                    // placeholder="ví dụ: 10 cho 110%"
+                      // placeholder="ví dụ: 10 cho 110%"
                     />
                     {/* giá bera sell */}
                     <Typography
@@ -2062,7 +2104,7 @@ export default function BGTMarketApp() {
                     color="success"
                     onClick={createOrder}
                     fullWidth
-                    disabled={(sellStatus === "Success") ? false : true}
+                    disabled={sellStatus === "Success" ? false : true}
                     sx={{
                       py: 1.5,
                       fontWeight: "bold",
@@ -2152,7 +2194,7 @@ export default function BGTMarketApp() {
                   onPageChange={handleChangePagePersonalBuy}
                   rowsPerPage={rowsPerPagePersonalBuy}
                   onRowsPerPageChange={handleChangeRowsPerPagePersonalBuy}
-                  rowsPerPageOptions={[5, 10, 25, 50,]}
+                  rowsPerPageOptions={[5, 10, 25, 50]}
                 />
               </>
             ) : (
@@ -2194,8 +2236,8 @@ export default function BGTMarketApp() {
                               {+order.unclaimed_bgt < 0.01
                                 ? "<0.01"
                                 : +order.unclaimed_bgt == 0
-                                  ? "0.00"
-                                  : (+order.unclaimed_bgt).toFixed(3)}
+                                ? "0.00"
+                                : (+order.unclaimed_bgt).toFixed(3)}
                             </TableCell>
                             <TableCell>
                               {(
@@ -2247,9 +2289,6 @@ export default function BGTMarketApp() {
           )}
         </Container>
       </Box>
-    </Box >
+    </Box>
   );
-
-
-
 }

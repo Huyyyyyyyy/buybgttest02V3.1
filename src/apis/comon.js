@@ -1,5 +1,7 @@
 import axios from "axios";
-const BASE_URL = "https://heybgt.xyz";
+import { BASE_HEY_BGT_URL } from "../const/const";
+
+//get all orders from market
 export const allOrderList = async (params) => {
   let res;
   const { page, size, state, type } = params;
@@ -11,7 +13,7 @@ export const allOrderList = async (params) => {
   }
   try {
     const response = await axios.get(
-      `${BASE_URL}/bot/bgtpool/allOrderList?page=${page}&size=${size}&state=${state}&type=${type}&orderBy=${orderBy}`
+      `${BASE_HEY_BGT_URL}/bot/bgtpool/allOrderList?page=${page}&size=${size}&state=${state}&type=${type}&orderBy=${orderBy}`
     );
     if (response.status == 200) {
       res = response.data.data;
@@ -23,6 +25,7 @@ export const allOrderList = async (params) => {
   return res;
 };
 
+//get all orders from specifit account
 export const allOrderListAccount = async (params) => {
   let res;
   const { page, size, state, type, address } = params;
@@ -45,6 +48,7 @@ export const allOrderListAccount = async (params) => {
   return res;
 };
 
+//get all vaults
 export const allVaultsList = async () => {
   let res;
   try {
