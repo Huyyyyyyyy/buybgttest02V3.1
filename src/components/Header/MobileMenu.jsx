@@ -14,15 +14,24 @@ const MobileMenu = (anchor) => {
   } = useContext(MobileContext);
   return (
     <Box
-      sx={{ minWidth: "100%" }}
+      sx={{
+        width: 250,
+        backgroundColor: "#ffc000",
+        height: "100%",
+        zIndex: 9999999,
+      }}
       role="presentation"
       onClick={toggleDrawer(anchor, false)}
       onKeyDown={toggleDrawer(anchor, false)}
     >
-      <List sx={{ minWidth: "100%" }}>
+      <List>
         {["Market", "About TTT", "Delegate for TTT"].map((text) => (
           <ListItem key={text} disablePadding>
             <ListItemButton
+              sx={{
+                backgroundColor: "#ffc000",
+                "&:hover": { backgroundColor: "#ffd700" },
+              }}
               onClick={() =>
                 handleClick(
                   text === "Market"
@@ -33,7 +42,15 @@ const MobileMenu = (anchor) => {
                 )
               }
             >
-              <ListItemText primary={text} />
+              <ListItemText
+                primary={text}
+                slotProps={{
+                  primary: {
+                    fontFamily: "Itim, cursive",
+                    fontSize: "20px",
+                  },
+                }}
+              />
             </ListItemButton>
           </ListItem>
         ))}

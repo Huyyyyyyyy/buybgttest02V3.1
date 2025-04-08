@@ -1,26 +1,46 @@
-import { Container } from "@mui/material";
+import { Box, Container, Typography } from "@mui/material";
 
 const Footer = () => {
   return (
-    <footer style={{ backgroundColor: "#161618" }}>
+    <footer>
       <Container
-        style={{
-          backgroundColor: "#161618",
-          padding: "10px 50px",
+        sx={{
+          backgroundColor: "rgba(104, 77, 2, 0.8)",
+          padding: "5px 10px",
           display: "flex",
-          margin: 0,
-          width: "100%",
+          alignItems: "center",
+          fontFamily: "Itim, cursive",
+          maxWidth: "100% !important",
         }}
       >
-        <span
-          style={{ color: "#A8B1FF", fontWeight: 600, paddingRight: "20px" }}
+        <Box
+          sx={{
+            width: { xs: "15%", sm: "7%", md: "5%", lg: "5%" },
+            display: "flex",
+            justifyContent: "center",
+            marginRight: "20px",
+          }}
         >
-          TIAui
-        </span>
-        <span style={{ color: "#FFFFF5DB" }}>
-          An interactive learning project from Thinkster. Code & design licensed
-          under MIT.
-        </span>
+          <img
+            src="https://dr9rfdtcol2ay.cloudfront.net/assets/TTT.png"
+            alt="logo"
+            style={{
+              width: "100%",
+              userSelect: "none",
+            }}
+          />
+        </Box>
+        <Typography
+          sx={{
+            fontFamily: "Itim, cursive",
+            color: "white",
+            width: "80%",
+            userSelect: "none",
+          }}
+        >
+          Trade BGT tokens easily and securely before claim time. Join the
+          peer-to-peer (C2C) BGT pre-claim marketplace today.
+        </Typography>
       </Container>
     </footer>
   );

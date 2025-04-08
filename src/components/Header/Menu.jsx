@@ -11,10 +11,13 @@ const Menu = () => {
     walletData: { address },
   } = useContext(WalletContext);
 
+  //for mobile menu sidebar
   const {
     data: { drawer },
     functions: { toggleDrawer },
   } = useContext(MobileContext);
+  //end of mobile menu sidebar
+
   return (
     <Box
       sx={{
@@ -27,10 +30,16 @@ const Menu = () => {
         alignItems: "center",
         marginLeft: "auto",
         marginRight: "auto",
-        padding: "5px 0",
+        padding: "4px 0",
       }}
     >
-      <Box sx={{ display: { md: "flex", lg: "none" }, width: { md: "15%" } }}>
+      <Box
+        sx={{
+          display: { md: "flex", lg: "none" },
+          width: "30%",
+          alignItems: "center",
+        }}
+      >
         {["left"].map((anchor) => (
           <Fragment key={anchor}>
             <Button onClick={toggleDrawer(anchor, true)}>
@@ -40,7 +49,7 @@ const Menu = () => {
                   color: "black",
                   background: "#FFEA00",
                   borderRadius: "10px",
-                  padding: "15px",
+                  padding: "10px",
                 }}
               />
             </Button>
@@ -54,9 +63,10 @@ const Menu = () => {
           </Fragment>
         ))}
       </Box>
+
       <Box
         sx={{
-          width: { md: "20%", lg: "10%" },
+          width: { xs: "70%", lg: "30%" },
           display: "flex",
           justifyContent: "center",
         }}
@@ -65,12 +75,12 @@ const Menu = () => {
           src="https://dr9rfdtcol2ay.cloudfront.net/assets/TTT.png"
           alt="logo"
           style={{
-            width: "90px",
-            height: "90px",
+            width: "20%",
             userSelect: "none",
           }}
         />
       </Box>
+
       <Box
         sx={{
           display: { xs: "none", md: "none", lg: "flex" },
@@ -169,7 +179,7 @@ const Menu = () => {
 
       <Box
         sx={{
-          width: { md: "30%", lg: "20%" },
+          width: "30%",
           display: "flex",
           alignItems: "center",
           justifyContent: { md: "flex-end", lg: "space-around" },
@@ -220,12 +230,11 @@ const Menu = () => {
             fontWeight: "bold",
             fontSize: { xs: "9px", sm: "11px", md: "13px" },
             zIndex: 10,
-            borderRadius: "200px",
             fontFamily: "Itim, cursive",
-            padding: "10px 18px",
+            padding: "5px 8px",
 
             "&:hover": {
-              backgroundColor: "#fff",
+              backgroundColor: "#ffc000",
               color: "#000",
               border: "1px solid black",
             },
@@ -237,10 +246,10 @@ const Menu = () => {
             style={{
               width: { xs: "60%", sm: "80%", md: "100%" },
               maxWidth: "40px",
-              marginRight: "10px",
+              marginRight: "5px",
             }}
           />
-          <Box sx={{}}>
+          <Box>
             {address
               ? ` ${address.slice(0, 6)}...${address.slice(38, 42)}`
               : "Connect Wallet"}

@@ -9,6 +9,7 @@ const Header = () => {
         position: "fixed",
         backdropFilter: "blur(10px)",
         backgroundColor: "rgba(104, 77, 2, 0.2)",
+        zIndex: 99,
       }}
     >
       <Menu></Menu>
