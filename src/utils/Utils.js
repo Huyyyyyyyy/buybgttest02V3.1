@@ -62,3 +62,8 @@ export const estimatedToPay = (beraPrice, unclaimedBgt, markup) => {
   const rs = beraPrice * unclaimedBgt * (1 + (markup - 10000) / 100 / 100);
   return rs.toFixed(2);
 };
+
+export const getAmountByPercentage = (percentage, balance) => {
+  const amountToSet = (parseFloat(balance) * percentage) / 100;
+  return amountToSet.toFixed(2);
+};

@@ -7,7 +7,7 @@ import {
   HONEY_CONTRACT_ADDRESS,
   VAULT_CONTRACT,
 } from "../const/const";
-import { getContract } from "../utils/Utils";
+import { getAmountByPercentage, getContract } from "../utils/Utils";
 import { useState } from "react";
 import { allOrderList, allVaultsList } from "../apis/comon";
 
@@ -26,6 +26,15 @@ export function useWallet() {
   const [rewardVaults, setRewardVaults] = useState([]);
   const [vaultsWithBalance, setVaultsWithBalance] = useState(rewardVaults);
   const [vaultForFill, setVaultForFill] = useState("");
+
+  const [orderType, setOrderType] = useState("Buy");
+  const [selectedPercentage, setSelectedPercentage] = useState(null);
+
+  const [amountToBuy, setAmountToBuy] = useState(0);
+  const [buyStatus, setBuyStatus] = useState("Success");
+  const [selectedVault, setSelectedVault] = useState("");
+  const [premiumRate, setPremiumRate] = useState("10");
+  const [sellStatus, setSellStatus] = useState("Success");
   //end wallet information
 
   //pagination
@@ -159,11 +168,11 @@ export function useWallet() {
 
   const getBeraPrice = async () => {
     try {
-      console.log(bgtContract);
-      const price = await bgtContract.getBeraPrice();
-      const rs = ethers.formatUnits(price[0].toString(), 8);
-      setBeraPrice(rs);
-      setPrice(rs);
+      if (loadingContractStatus) {
+        const price = await bgtContract.getBeraPrice();
+        const rs = ethers.formatUnits(price[0].toString(), 8);
+        setBeraPrice(rs);
+      }
     } catch (err) {
       console.error("Get Bera price error:", err);
     }
@@ -209,6 +218,106 @@ export function useWallet() {
       console.error("Fill order error:", err);
     }
   };
+
+  const setAmountByPercentage = (selectedPercentage) => {
+    const am = getAmountByPercentage(selectedPercentage, honeyBalance);
+    setAmountToBuy(am);
+  };
+
+  const createOrder = async () => {
+    try {
+      const currentChain = await window.ethereum.request({
+        method: "eth_chainId",
+      });
+      if (currentChain !== BERA_CHAINID) {
+        await window.ethereum.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: BERA_CHAINID }],
+        });
+      }
+
+      if (orderType === "Buy") {
+        setBuyStatus("Processing");
+        if (
+          !amountToBuy ||
+          !beraPrice ||
+          isNaN(amountToBuy) ||
+          isNaN(beraPrice)
+        ) {
+          setBuyStatus("Success");
+          return;
+        }
+
+        await getBeraPrice(heyBgtContract);
+        const amountIn = ethers.parseUnits(amountToBuy, 18);
+        const priceIn = ethers.parseUnits(beraPrice, 18);
+        const nodeId = BigInt(2);
+
+        const approveTx = await honeyContract.approve(
+          HEY_BGT_CONTRACT_ADDRESS,
+          amountIn
+        );
+        await approveTx.wait();
+
+        const tx = await bgtContract.openBuyBgtOrder(
+          priceIn,
+          amountIn,
+          nodeId,
+          {
+            gasLimit: 500000,
+          }
+        );
+        const receipt = await tx.wait();
+        // await fetchAccountBuyOrders(pagePersonalBuy, rowsPerPagePersonalBuy);
+        setBuyStatus("Success");
+      } else {
+        setSellStatus("Processing");
+        if (!premiumRate || !selectedVault || isNaN(premiumRate)) {
+          setSellStatus("Success");
+          return;
+        }
+
+        const premiumRateIn = (+premiumRate * 10000) / 100 + 10000;
+        const nodeId = BigInt(2);
+        const rewardVault = selectedVault;
+        const rewardVaultContract = new ethers.Contract(
+          rewardVault,
+          VAULT_ABI,
+          signer
+        );
+
+        const operatorTx = await rewardVaultContract.setOperator(
+          CONTRACHEY_BGT_CONTRACT_ADDRESST_ADDRESS
+        );
+        await operatorTx.wait();
+
+        const tx = await contract.openSellBgtOrder(
+          rewardVault,
+          BigInt(premiumRateIn),
+          nodeId,
+          {
+            gasLimit: 500000,
+          }
+        );
+        const receipt = await tx.wait();
+        // await fetchAccountSellOrders(pagePersonalBuy, rowsPerPagePersonalBuy);
+        setSellStatus("Success");
+      }
+    } catch (error) {
+      console.error("Create order failed:", error);
+      if (error.code === "ACTION_REJECTED" || error.code === 4001) {
+      } else if (error.code === "CALL_EXCEPTION" && error.data) {
+        const iface = new ethers.Interface(HEY_BGT_CONTRACT);
+        try {
+          const decoded = iface.parseError(error.data);
+        } catch (decodeErr) {}
+      } else {
+      }
+      setBuyStatus("Success");
+      setSellStatus("Success");
+    }
+  };
+
   //end wallet functions
 
   //pagination functions
@@ -232,6 +341,12 @@ export function useWallet() {
       vaultForFill,
       vaultsWithBalance,
       loadingContractStatus,
+      orderType,
+      selectedPercentage,
+      amountToBuy,
+      buyStatus,
+      sellStatus,
+      selectedVault,
     },
     walletFunctions: {
       connectWallet,
@@ -241,8 +356,14 @@ export function useWallet() {
       fetchVaults,
       fetchVaultBalances,
       getBeraPrice,
+      setBeraPrice,
       fillSellOrder,
       fillBuyOrder,
+      setOrderType,
+      setSelectedPercentage,
+      setAmountByPercentage,
+      createOrder,
+      setSelectedVault,
     },
     paginationData: { page, rowsPerPage, total },
     paginationFunctions: {

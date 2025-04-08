@@ -13,6 +13,8 @@ import {
   TableHead,
   TablePagination,
   TableRow,
+  ToggleButton,
+  ToggleButtonGroup,
   Typography,
 } from "@mui/material";
 import { useContext, useEffect } from "react";
@@ -28,7 +30,6 @@ import {
 
 const OrdersMarket = () => {
   const {
-    toggle: { activeTab },
     walletData: {
       address,
       orders,
@@ -46,6 +47,8 @@ const OrdersMarket = () => {
     },
     paginationData: { page, rowsPerPage, total },
     paginationFunctions: { handleChangePage, handleChangeRowsPerPage },
+    toggle: { activeTab },
+    toggleFunctions: { setActiveTab },
   } = useContext(WalletContext);
 
   //load the orders of market if page of new tab changing
@@ -110,7 +113,81 @@ const OrdersMarket = () => {
   //end custom style for common cells
 
   return (
-    <>
+    <Box
+      sx={{
+        maxWidth: "100%",
+        bgcolor: "black",
+        opacity: "0.8",
+        borderRadius: { xs: "10px", md: "15px", lg: "15px" },
+        boxShadow: "0 8px 30px rgba(0,0,0,0.1)",
+        padding: "20px",
+        color: "black",
+        marginBottom: "15px",
+      }}
+    >
+      <Typography
+        variant="h2"
+        fontWeight="bold"
+        gutterBottom
+        textAlign="center"
+        sx={{
+          fontFamily: "'Itim', cursive",
+          color: "#fff",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: { xs: "20px", sm: "40px", md: "60px" },
+        }}
+      >
+        <img
+          src="https://dr9rfdtcol2ay.cloudfront.net/assets/BGT.png"
+          alt="BGT Icon"
+          style={{ width: "10%", marginRight: "10px" }}
+        />
+        BGT Market
+      </Typography>
+
+      <ToggleButtonGroup
+        value={activeTab}
+        exclusive
+        onChange={(event, newValue) => {
+          if (newValue != null) {
+            setActiveTab(newValue);
+          }
+        }}
+        fullWidth
+        sx={{
+          mb: 2,
+          fontFamily: "Itim, cursive",
+          borderRadius: "10px",
+          padding: "4px",
+          "& .MuiToggleButton-root": {
+            flex: 1,
+            fontWeight: "bold",
+            fontSize: "1rem",
+            color: "#fff",
+            border: "none",
+            borderRadius: "10px",
+            textTransform: "none",
+            fontFamily: "Itim, cursive",
+            transition: "all 0.05s",
+            "&.Mui-selected": {
+              backgroundColor: "#FFEA00",
+              color: "black",
+              borderRadius: "10px",
+            },
+            "&:hover": {
+              backgroundColor: "inherit",
+            },
+            "&.Mui-selected:hover": {
+              backgroundColor: "#FFEA00",
+            },
+          },
+        }}
+      >
+        <ToggleButton value="Buy">Buy BGT</ToggleButton>
+        <ToggleButton value="Sell">Sell BGT</ToggleButton>
+      </ToggleButtonGroup>
       <TableContainer
         component={Paper}
         sx={{
@@ -345,9 +422,9 @@ const OrdersMarket = () => {
                                 disabled={parseFloat(vault.bgtBalance) <= 0}
                                 sx={{
                                   bgcolor: "rgba(0, 0, 0, 1)",
-                                  color: "#fff", // Chữ trắng cho các mục
-                                  fontFamily: "'Itim', cursive'", // Phông chữ Itim
-                                  "&:hover": { bgcolor: "#333" }, // Hiệu ứng hover xám đậm
+                                  color: "#fff",
+                                  fontFamily: "'Itim', cursive'",
+                                  "&:hover": { bgcolor: "#333" },
                                 }}
                               >
                                 <Box
@@ -417,8 +494,7 @@ const OrdersMarket = () => {
           rowsPerPage={rowsPerPage}
           onRowsPerPageChange={handleChangeRowsPerPage}
           rowsPerPageOptions={[5, 10, 25, 50, 100]}
-          labelRowsPerPage="Size :" // Customize label text
-          // Customize the displayed rows text using a function:
+          labelRowsPerPage="Size :"
           labelDisplayedRows={({ from, to, count }) =>
             `${from} to ${to} ( ${count} items )`
           }
@@ -449,7 +525,7 @@ const OrdersMarket = () => {
           }}
         />
       ) : null}
-    </>
+    </Box>
   );
 };
 
