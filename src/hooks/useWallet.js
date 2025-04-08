@@ -34,12 +34,17 @@ export function useWallet() {
         method: "wallet_switchEthereumChain",
         params: [{ chainId: BERA_CHAINID }],
       });
+      const signer = await provider.getSigner();
       setProvider(provider);
-      setSigner(await provider.getSigner());
-      setAddress(await signer.getAddress());
+      setSigner(signer);
+      await loadAddress(signer);
     } catch (err) {
       console.error("Connect wallet error:", err);
     }
+  };
+
+  const loadAddress = async (signer) => {
+    setAddress(await signer.getAddress());
   };
 
   const loadContract = async () => {

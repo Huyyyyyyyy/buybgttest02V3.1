@@ -1,10 +1,23 @@
-import { Button, Box } from "@mui/material";
+import { Button, Box, Drawer } from "@mui/material";
+import { Fragment, useContext } from "react";
+import { WalletContext } from "../../context/WalletContext";
+import { MobileContext } from "../../context/MobileContext";
+import MenuIcon from "@mui/icons-material/Menu";
+import MobileMenu from "./MobileMenu";
 
 const Menu = () => {
+  const {
+    walletFunctions: { connectWallet },
+    walletData: { address },
+  } = useContext(WalletContext);
+
+  const {
+    data: { drawer },
+    functions: { toggleDrawer },
+  } = useContext(MobileContext);
   return (
     <Box
       sx={{
-        maxWidth: "100%",
         display: "flex",
         justifyContent: {
           xs: "space-between",
@@ -14,13 +27,12 @@ const Menu = () => {
         alignItems: "center",
         marginLeft: "auto",
         marginRight: "auto",
-        padding: "10px 0",
+        padding: "5px 0",
       }}
     >
-      {/* width dưới 768px */}
-      {/* <Box sx={{ display: { md: "flex", lg: "none" }, width: { md: "15%" } }}>
+      <Box sx={{ display: { md: "flex", lg: "none" }, width: { md: "15%" } }}>
         {["left"].map((anchor) => (
-          <React.Fragment key={anchor}>
+          <Fragment key={anchor}>
             <Button onClick={toggleDrawer(anchor, true)}>
               <MenuIcon
                 sx={{
@@ -34,17 +46,17 @@ const Menu = () => {
             </Button>
             <Drawer
               anchor={anchor}
-              open={state[anchor]}
+              open={drawer[anchor]}
               onClose={toggleDrawer(anchor, false)}
             >
-              {list(anchor)}
+              <MobileMenu anchor={anchor}></MobileMenu>
             </Drawer>
-          </React.Fragment>
+          </Fragment>
         ))}
-      </Box> */}
+      </Box>
       <Box
         sx={{
-          width: { md: "30%", lg: "10%" },
+          width: { md: "20%", lg: "10%" },
           display: "flex",
           justifyContent: "center",
         }}
@@ -200,7 +212,7 @@ const Menu = () => {
 
         <Button
           variant="outlined"
-          // onClick={connectWallet}
+          onClick={connectWallet}
           sx={{
             backgroundColor: "#FFEA00",
             border: "1.5px solid black",
@@ -229,9 +241,9 @@ const Menu = () => {
             }}
           />
           <Box sx={{}}>
-            {/* {account
-              ? ` ${account.slice(0, 6)}...${account.slice(38, 42)}`
-              : "Connect Wallet"} */}
+            {address
+              ? ` ${address.slice(0, 6)}...${address.slice(38, 42)}`
+              : "Connect Wallet"}
           </Box>
         </Button>
       </Box>

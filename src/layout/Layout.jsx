@@ -1,17 +1,18 @@
 import { Outlet } from "react-router";
 import Header from "../components/Header/Header";
-import { useWallet } from "../hooks/useWallet";
-import WalletContext from "../context/WalletContext";
+import { WalletProvider } from "../context/WalletContext";
 import Footer from "../components/Footer/Footer";
+import { MobileProvider } from "../context/MobileContext";
 
 const Layout = () => {
-  const currentWallet = useWallet();
   return (
     <>
-      <WalletContext.Provider value={currentWallet}>
-        <Header />
-        <Outlet />
-      </WalletContext.Provider>
+      <WalletProvider>
+        <MobileProvider>
+          <Header />
+          <Outlet />
+        </MobileProvider>
+      </WalletProvider>
       <Footer />
     </>
   );
