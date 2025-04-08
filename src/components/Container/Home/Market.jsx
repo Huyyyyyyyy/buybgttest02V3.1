@@ -24,13 +24,13 @@ const Market = () => {
   return (
     <Container
       sx={{
-        maxWidth: { xs: "100%", md: "90%", lg: "60%" },
+        maxWidth: { xs: "98%", md: "90%", lg: "60%" },
         bgcolor: "black",
         opacity: "0.8",
-        borderRadius: { xs: "none", md: "15px", lg: "15px" },
+        borderRadius: { xs: "10px", md: "15px", lg: "15px" },
         padding: "10px",
         boxShadow: "0 8px 30px rgba(0,0,0,0.1)",
-        marginTop: "8%",
+        marginTop: "7%",
         color: "black",
       }}
     >
