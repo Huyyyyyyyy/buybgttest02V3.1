@@ -142,8 +142,8 @@ const OrdersMarket = () => {
                 <TableCell sx={cellNonMobile}>Address</TableCell>
                 <TableCell sx={cellNonMobile}>Hash</TableCell>
                 <TableCell sx={cellNonMobile}>Time</TableCell>
-                <TableCell sx={cellCrossPlatform}>Action</TableCell>
                 <TableCell sx={cellCrossPlatform}>Vault</TableCell>
+                <TableCell sx={cellCrossPlatform}>Action</TableCell>
               </TableRow>
             ) : null}
           </TableHead>
@@ -274,18 +274,6 @@ const OrdersMarket = () => {
                     <TableCell sx={cellValueNoneMobile}>
                       {formatTime(order.time)}
                     </TableCell>
-                    <TableCell sx={cellValueCrossPlatform}>
-                      <Button
-                        variant="contained"
-                        color="error"
-                        onClick={() =>
-                          fillBuyOrder(order.order_id, vaultForFill)
-                        }
-                        sx={{ borderRadius: "12px", width: "100%" }}
-                      >
-                        Sell
-                      </Button>
-                    </TableCell>
                     <TableCell sx={{ border: 0 }}>
                       <FormControl fullWidth>
                         <InputLabel
@@ -400,6 +388,18 @@ const OrdersMarket = () => {
                           )}
                         </Select>
                       </FormControl>
+                    </TableCell>
+                    <TableCell sx={cellValueCrossPlatform}>
+                      <Button
+                        variant="contained"
+                        color="error"
+                        onClick={() =>
+                          fillBuyOrder(order.order_id, vaultForFill)
+                        }
+                        sx={{ borderRadius: "12px", width: "100%" }}
+                      >
+                        Sell
+                      </Button>
                     </TableCell>
                   </TableRow>
                 )
