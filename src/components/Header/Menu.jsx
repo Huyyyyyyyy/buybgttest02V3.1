@@ -35,8 +35,8 @@ const Menu = () => {
     >
       <Box
         sx={{
-          display: { md: "flex", lg: "none" },
-          width: "30%",
+          display: { md: "none", lg: "none" },
+          width: { xs: "30%", sm: "30%", lg: "20%" },
           alignItems: "center",
         }}
       >
@@ -49,7 +49,7 @@ const Menu = () => {
                   color: "black",
                   background: "#FFEA00",
                   borderRadius: "10px",
-                  padding: "10px",
+                  padding: "6px",
                 }}
               />
             </Button>
@@ -66,7 +66,7 @@ const Menu = () => {
 
       <Box
         sx={{
-          width: { xs: "70%", lg: "30%" },
+          width: { xs: "30%", sm: "30%", md: "25%", lg: "25%" },
           display: "flex",
           justifyContent: "center",
         }}
@@ -75,27 +75,29 @@ const Menu = () => {
           src="https://dr9rfdtcol2ay.cloudfront.net/assets/TTT.png"
           alt="logo"
           style={{
-            width: "20%",
+            width: "60px",
+            height: "60px",
             userSelect: "none",
+            alignItems: "center",
           }}
         />
       </Box>
 
       <Box
         sx={{
-          display: { xs: "none", md: "none", lg: "flex" },
+          display: { xs: "none", md: "flex", lg: "flex" },
           alignItems: "center",
           justifyContent: "space-between",
-          width: { md: "60%", lg: "70%" },
+          width: { md: "50%", lg: "50%" },
+          padding: "0 15px",
         }}
       >
         <Button
           variant="text"
           sx={{
             color: "#fff",
-            fontSize: { sm: "28px", md: "32px" },
+            fontSize: "20px",
             width: "30%",
-            height: "18px",
             textShadow: `
                 -1px -1px 0 black,
                 1px -1px 0 black,
@@ -106,21 +108,11 @@ const Menu = () => {
             fontFamily: "Itim, cursive",
             fontWeight: "400",
             textTransform: "none",
+            display: "flex",
             "&:hover": {
               background: "none",
             },
-            "& span.label::after": {
-              content: '"   "',
-              display: "block",
-              margin: "4px auto 0 auto",
-              width: "100px",
-              height: "5px",
-              backgroundColor: "#FFEA00",
-              borderRadius: "4px",
-              border: "1px solid black",
-              position: "absolute",
-              top: "26px",
-            },
+            borderBottom: "5px solid yellow",
           }}
         >
           <span className="label">Market</span>
@@ -133,7 +125,7 @@ const Menu = () => {
           }}
           sx={{
             color: "#fff",
-            fontSize: "32px",
+            fontSize: "20px",
             width: "30%",
             textShadow: `-1px -1px 0 black, -1px 0 black, -1px 1px 0 black, 1px 1px 0 black`,
             fontFamily: "Itim, cursive",
@@ -159,8 +151,8 @@ const Menu = () => {
           }}
           sx={{
             color: "#fff",
-            fontSize: "32px",
-            width: "40%",
+            fontSize: "20px",
+            width: "30%",
             textShadow: `-1px -1px 0 black, 1px -1px 0 black, -1px 1px 0 black, 1px 1px 0 black`,
             fontFamily: "Itim, cursive",
             fontWeight: "400",
@@ -173,89 +165,43 @@ const Menu = () => {
             },
           }}
         >
-          <span className="label-1">Delegate for TTT</span>
+          <span className="label-1">Delegate</span>
         </Button>
       </Box>
 
-      <Box
+      <Button
+        variant="outlined"
+        onClick={connectWallet}
         sx={{
-          width: "30%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: { md: "flex-end", lg: "space-around" },
+          width: { xs: "30%", sm: "30%", md: "25%", lg: "25%" },
+          backgroundColor: "#FFEA00",
+          border: "1.5px solid black",
+          color: "#000000",
+          fontWeight: "bold",
+          fontSize: { xs: "9px", sm: "11px", md: "13px" },
+          zIndex: 10,
+          fontFamily: "Itim, cursive",
+          "&:hover": {
+            backgroundColor: "#ffc000",
+            color: "#000",
+            border: "1px solid black",
+          },
         }}
       >
-        <Box
-          sx={{
-            position: "relative",
-            paddingTop: "10px",
-            display: {
-              xs: "none",
-              sm: "none",
-              md: "none",
-              lg: "none",
-              xl: "flex",
-            },
+        <img
+          src="https://dr9rfdtcol2ay.cloudfront.net/assets/iconwallet.png"
+          alt="wallet icon"
+          style={{
+            maxWidth: "15%",
+            marginRight: "5px",
           }}
-        >
-          <img
-            src="https://dr9rfdtcol2ay.cloudfront.net/assets/iconnetwork.png"
-            alt="iconnetwork"
-            style={{
-              width: { md: "80%", lg: "100%" },
-              height: "60px",
-              maxWidth: "60px",
-              objectFit: "cover",
-            }}
-          ></img>
-          <img
-            src="https://dr9rfdtcol2ay.cloudfront.net/assets/icongreen.png"
-            alt="icongreen"
-            style={{
-              width: "12px",
-              height: "12px",
-              position: "absolute",
-              right: "0",
-            }}
-          />
+        />
+        <Box>
+          {address
+            ? ` ${address.slice(0, 6)}...${address.slice(38, 42)}`
+            : "Connect Wallet"}
         </Box>
-
-        <Button
-          variant="outlined"
-          onClick={connectWallet}
-          sx={{
-            backgroundColor: "#FFEA00",
-            border: "1.5px solid black",
-            color: "#000000",
-            fontWeight: "bold",
-            fontSize: { xs: "9px", sm: "11px", md: "13px" },
-            zIndex: 10,
-            fontFamily: "Itim, cursive",
-            padding: "5px 8px",
-
-            "&:hover": {
-              backgroundColor: "#ffc000",
-              color: "#000",
-              border: "1px solid black",
-            },
-          }}
-        >
-          <img
-            src="https://dr9rfdtcol2ay.cloudfront.net/assets/iconwallet.png"
-            alt="wallet icon"
-            style={{
-              width: { xs: "60%", sm: "80%", md: "100%" },
-              maxWidth: "40px",
-              marginRight: "5px",
-            }}
-          />
-          <Box>
-            {address
-              ? ` ${address.slice(0, 6)}...${address.slice(38, 42)}`
-              : "Connect Wallet"}
-          </Box>
-        </Button>
-      </Box>
+      </Button>
     </Box>
   );
 };

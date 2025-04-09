@@ -37,7 +37,7 @@ export const allOrderListAccount = async (params) => {
   }
   try {
     const response = await axios.get(
-      `${BASE_URL}/bot/bgtpool/allOrderList?address=${address}&page=${page}&size=${size}&state=${state}&type=${type}&orderBy=${orderBy}`
+      `${BASE_HEY_BGT_URL}/bot/bgtpool/allOrderList?address=${address}&page=${page}&size=${size}&state=${state}&type=${type}&orderBy=${orderBy}`
     );
     if (response.status == 200) {
       res = response.data.data;
@@ -53,7 +53,7 @@ export const allVaultsList = async () => {
   let res;
   try {
     const response = await axios.get(
-      `${BASE_URL}/bot/bgtpool/vaultlist`
+      `${BASE_HEY_BGT_URL}/bot/bgtpool/vaultlist`
     );
     if (response.status == 200) {
       res = response.data;

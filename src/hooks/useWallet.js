@@ -9,7 +9,11 @@ import {
 } from "../const/const";
 import { getAmountByPercentage, getContract } from "../utils/Utils";
 import { useState } from "react";
-import { allOrderList, allVaultsList } from "../apis/comon";
+import {
+  allOrderList,
+  allOrderListAccount,
+  allVaultsList,
+} from "../apis/comon";
 
 export function useWallet() {
   // wallet information
@@ -22,6 +26,16 @@ export function useWallet() {
   const [beraPrice, setBeraPrice] = useState("");
 
   const [orders, setOrders] = useState([]);
+
+  const [buyOrdersAccount, setBuyOrdersAccount] = useState([]);
+  const [totalPersonalBuy, setTotalPersonalBuy] = useState(0);
+  const [pagePersonalBuy, setPagePersonalBuy] = useState(0);
+  const [rowsPerPagePersonalBuy, setRowsPerPagePersonalBuy] = useState(5);
+
+  const [sellOrdersAccount, setSellOrdersAccount] = useState([]);
+  const [totalPersonalSell, setTotalPersonalSell] = useState(0);
+  const [pagePersonalSell, setPagePersonalSell] = useState(0);
+  const [rowsPerPagePersonalSell, setRowsPerPagePersonalSell] = useState(5);
 
   const [rewardVaults, setRewardVaults] = useState([]);
   const [vaultsWithBalance, setVaultsWithBalance] = useState(rewardVaults);
@@ -69,6 +83,7 @@ export function useWallet() {
       setSigner(signer);
       await loadAddress(signer);
       await loadContract(signer);
+      await fetchVaults();
     } catch (err) {
       console.error("Connect wallet error:", err);
     }
@@ -129,16 +144,53 @@ export function useWallet() {
     }
   };
 
+  const fetchAccountBuyOrders = async (pageNumber, pageSize) => {
+    try {
+      const params = {
+        address: address,
+        page: pageNumber,
+        size: pageSize,
+        state: -1,
+        type: 1,
+      };
+      const response = await allOrderListAccount(params);
+      console.log(response);
+      setBuyOrdersAccount(response.list);
+      setTotalPersonalBuy(response.total);
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+    }
+  };
+
+  const fetchAccountSellOrders = async (pageNumber, pageSize) => {
+    try {
+      const params = {
+        address: address,
+        page: pageNumber,
+        size: pageSize,
+        state: -1,
+        type: 2,
+      };
+      const response = await allOrderListAccount(params);
+      console.log(response);
+      setSellOrdersAccount(response.list);
+      setTotalPersonalSell(response.total);
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+    }
+  };
+
   const fetchVaults = async () => {
     try {
       const response = await allVaultsList();
+      console.log(response);
       setRewardVaults(response.data);
     } catch (error) {
       console.error("Error fetching vaults:", error);
     }
   };
 
-  const fetchVaultBalances = async (signer) => {
+  const fetchVaultBalances = async () => {
     try {
       const updatedVaults = await Promise.all(
         rewardVaults.map(async (vault) => {
@@ -248,7 +300,7 @@ export function useWallet() {
           return;
         }
 
-        await getBeraPrice(heyBgtContract);
+        await getBeraPrice(bgtContract);
         const amountIn = ethers.parseUnits(amountToBuy, 18);
         const priceIn = ethers.parseUnits(beraPrice, 18);
         const nodeId = BigInt(2);
@@ -318,6 +370,25 @@ export function useWallet() {
     }
   };
 
+  const closeOrder = async (orderId, orderType) => {
+    try {
+      const id = BigInt(orderId);
+      let tx;
+
+      if (orderType === "Buy") {
+        tx = await bgtContract.closeBuyBgtOrder(id);
+        await tx.wait();
+        await fetchAccountBuyOrders(pagePersonalBuy, rowsPerPagePersonalBuy);
+      } else if (orderType === "Sell") {
+        tx = await bgtContract.closeSellBgtOrder(id);
+        await tx.wait();
+        await fetchAccountSellOrders(pagePersonalBuy, rowsPerPagePersonalBuy);
+      }
+      await tx.wait();
+    } catch (err) {
+      console.error("Close order error:", err);
+    }
+  };
   //end wallet functions
 
   //pagination functions
@@ -329,6 +400,25 @@ export function useWallet() {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
+
+  const handleChangePagePersonalBuy = (event, newPage) => {
+    setPagePersonalBuy(newPage);
+  };
+
+  const handleChangeRowsPerPagePersonalBuy = (event) => {
+    setRowsPerPagePersonalBuy(parseInt(event.target.value, 10));
+    setPagePersonalBuy(0);
+  };
+
+  const handleChangePagePersonalSell = (event, newPage) => {
+    setPagePersonalSell(newPage);
+  };
+
+  const handleChangeRowsPerPagePersonalSell = (event) => {
+    setRowsPerPagePersonalSell(parseInt(event.target.value, 10));
+    setPagePersonalSell(0);
+  };
+
   //end pagination functions
 
   return {
@@ -347,6 +437,16 @@ export function useWallet() {
       buyStatus,
       sellStatus,
       selectedVault,
+      rewardVaults,
+      premiumRate,
+      pagePersonalBuy,
+      rowsPerPagePersonalBuy,
+      pagePersonalSell,
+      rowsPerPagePersonalSell,
+      buyOrdersAccount,
+      sellOrdersAccount,
+      totalPersonalBuy,
+      totalPersonalSell,
     },
     walletFunctions: {
       connectWallet,
@@ -364,6 +464,15 @@ export function useWallet() {
       setAmountByPercentage,
       createOrder,
       setSelectedVault,
+      setVaultsWithBalance,
+      setPremiumRate,
+      fetchAccountBuyOrders,
+      fetchAccountSellOrders,
+      handleChangePagePersonalBuy,
+      handleChangeRowsPerPagePersonalBuy,
+      handleChangePagePersonalSell,
+      handleChangeRowsPerPagePersonalSell,
+      closeOrder,
     },
     paginationData: { page, rowsPerPage, total },
     paginationFunctions: {

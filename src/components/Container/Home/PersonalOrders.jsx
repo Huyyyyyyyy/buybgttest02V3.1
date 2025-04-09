@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  CircularProgress,
   Container,
   FormControl,
   InputLabel,
@@ -11,6 +12,7 @@ import {
   TableBody,
   TableCell,
   TableContainer,
+  TableHead,
   TablePagination,
   TableRow,
   TextField,
@@ -21,6 +23,7 @@ import {
 import { useContext, useEffect } from "react";
 import { WalletContext } from "../../../context/WalletContext";
 import { formatNormalAmount } from "../../../utils/Utils";
+import CircularPercentage from "./Custom";
 
 const PersonalOrders = () => {
   const percentagePresets = [10, 50, 100, 1000];
@@ -38,6 +41,17 @@ const PersonalOrders = () => {
       buyStatus,
       sellStatus,
       loadingContractStatus,
+      vaultsWithBalance,
+      rewardVaults,
+      premiumRate,
+      pagePersonalBuy,
+      rowsPerPagePersonalBuy,
+      pagePersonalSell,
+      rowsPerPagePersonalSell,
+      buyOrdersAccount,
+      sellOrdersAccount,
+      totalPersonalBuy,
+      totalPersonalSell,
     },
     walletFunctions: {
       setOrderType,
@@ -47,12 +61,54 @@ const PersonalOrders = () => {
       setSelectedVault,
       getBeraPrice,
       setSelectedPercentage,
+      fetchVaultBalances,
+      setVaultsWithBalance,
+      setPremiumRate,
+      fetchAccountBuyOrders,
+      fetchAccountSellOrders,
+      handleChangePagePersonalBuy,
+      handleChangeRowsPerPagePersonalBuy,
+      handleChangePagePersonalSell,
+      handleChangeRowsPerPagePersonalSell,
+      closeOrder,
     },
   } = useContext(WalletContext);
 
+  //fecth bera price when established contract instances
   useEffect(() => {
     getBeraPrice();
   }, [loadingContractStatus]);
+  //fecth bera price when established contract instances
+
+  //fetch vaults balance when trigger loaded vaults list
+  useEffect(() => {
+    fetchVaultBalances();
+  }, [rewardVaults]);
+  //fetch vaults balance when trigger loaded vaults list
+
+  useEffect(() => {
+    if (address !== "" && orderType == "Buy Orders") {
+      fetchAccountBuyOrders(pagePersonalBuy, rowsPerPagePersonalBuy);
+    }
+  }, [pagePersonalBuy, rowsPerPagePersonalBuy, address, orderType]);
+
+  useEffect(() => {
+    if (address !== "" && orderType == "Sell Orders") {
+      fetchAccountSellOrders(pagePersonalBuy, rowsPerPagePersonalBuy);
+    }
+  }, [pagePersonalBuy, rowsPerPagePersonalBuy, address, orderType]);
+
+  //custom style
+  const cellCrossPlatform = {
+    fontFamily: "'Itim', cursive",
+    color: "#222",
+    fontWeight: "bold",
+    border: 0,
+    width: "25%",
+    fontSize: { xs: "13px", sm: "15px", md: "18px", lg: "18px" },
+    textAlign: "center",
+  };
+  //end custom style
 
   return (
     <Container
@@ -273,14 +329,14 @@ const PersonalOrders = () => {
                   fullWidth
                   sx={{
                     borderRadius: "12px",
-                    backgroundColor: "#f5f5f5", // Nền mờ như yêu cầu
+                    backgroundColor: "#f5f5f5",
                     "& .MuiInputBase-input": {
-                      fontFamily: "Itim, cursive", // Phông chữ cho input
-                      fontWeight: "700", // Đậm chữ nhập vào
-                      color: "#333", // Màu chữ tối
+                      fontFamily: "Itim, cursive",
+                      fontWeight: "700",
+                      color: "#333",
                     },
                     "& .MuiOutlinedInput-notchedOutline": {
-                      border: "none", // Không viền
+                      border: "none",
                     },
                   }}
                   value={amountToBuy}
@@ -315,6 +371,7 @@ const PersonalOrders = () => {
                   </Typography>
                 </Box>
               </Box>
+
               <Box
                 sx={{
                   mb: 2,
@@ -322,8 +379,14 @@ const PersonalOrders = () => {
                   justifyContent: "space-between",
                 }}
               >
-                <Typography variant="body2">Honey to pay (≥ 10.00)</Typography>
+                <Typography
+                  variant="body2"
+                  sx={{ fontFamily: "'Itim', cursive" }}
+                >
+                  Honey to pay (≥ 10.00)
+                </Typography>
               </Box>
+
               <Button
                 variant="contained"
                 color="success"
@@ -333,7 +396,7 @@ const PersonalOrders = () => {
                 sx={{
                   py: 1.5,
                   fontWeight: "bold",
-                  borderRadius: "20px",
+                  borderRadius: "10px",
                   boxShadow: "0 4px 12px rgba(0, 128, 0, 0.3)",
                   fontFamily: "'Itim', cursive",
                   fontSize: "1.2rem",
@@ -371,7 +434,7 @@ const PersonalOrders = () => {
             </>
           ) : (
             <>
-              {/* <FormControl fullWidth sx={{ mb: 2 }}>
+              <FormControl fullWidth sx={{ mb: 2 }}>
                 <InputLabel id="vault-label">Reward Vault</InputLabel>
                 <Select
                   labelId="vault-label"
@@ -381,6 +444,7 @@ const PersonalOrders = () => {
                   sx={{
                     borderRadius: "12px",
                     backgroundColor: "#f5f5f5",
+                    fontFamily: "'Itim', cursive",
                   }}
                 >
                   <MenuItem value="">
@@ -424,9 +488,9 @@ const PersonalOrders = () => {
                     ) : null
                   )}
                 </Select>
-              </FormControl> */}
+              </FormControl>
 
-              {/* <Box
+              <Box
                 sx={{
                   mb: 2,
                   display: "flex",
@@ -458,12 +522,11 @@ const PersonalOrders = () => {
                     alt="BERA Price"
                     style={{ width: 23, height: 23, marginRight: 8 }}
                   />
-                  BERA Price:{" "}
-                  {beraPrice ? `$${parseFloat(beraPrice).toFixed(2)}` : "N/A"}
+                  BERA Price: {formatNormalAmount(beraPrice)}
                 </Typography>
-              </Box> */}
+              </Box>
 
-              {/* <Box
+              <Box
                 sx={{
                   mb: 2,
                   display: "flex",
@@ -480,46 +543,43 @@ const PersonalOrders = () => {
                     onClick={() => setPremiumRate(rate.toString())}
                     sx={{
                       borderRadius: "12px",
-                      minWidth: "60px",
-                      fontSize: "1rem", // Điều chỉnh kích thước chữ
-                      fontFamily: "'Itim', cursive", // Thay đổi phông chữ
+                      width: "25%",
+                      fontSize: "1rem",
+                      fontFamily: "'Itim', cursive",
                       backgroundColor:
                         premiumRate === rate.toString()
                           ? "#ffca28"
-                          : "transparent", // Màu nền của nút khi được chọn
+                          : "transparent",
                       color:
-                        premiumRate === rate.toString() ? "black" : "inherit", // Màu chữ khi được chọn
-                      borderColor: "#fff", // Màu viền
+                        premiumRate === rate.toString() ? "black" : "inherit",
+                      borderColor: "#fff",
                       "&:hover": {
-                        backgroundColor: "#ffca28", // Màu nền khi hover (giống màu chọn)
-                        color: "#000", // Màu chữ khi hover
+                        backgroundColor: "#ffca28",
+                        color: "#000",
                       },
                     }}
                   >
                     {rate}%
                   </Button>
                 ))}
-              </Box> */}
+              </Box>
 
-              {/* <Box
+              <Box
                 sx={{
                   mb: 2,
                   display: "flex",
                   justifyContent: "space-between",
                 }}
               >
-                <Typography variant="body2">BGT in vault (≥0.01)</Typography>
-              </Box> */}
+                <Typography
+                  variant="body2"
+                  sx={{ fontFamily: "'Itim', cursive" }}
+                >
+                  BGT in vault ( ≥0.01 )
+                </Typography>
+              </Box>
 
-              {/* <Box
-                sx={{
-                  mb: 2,
-                  display: "flex",
-                  justifyContent: "space-between",
-                }}
-              ></Box> */}
-
-              {/* <Button
+              <Button
                 variant="contained"
                 color="success"
                 onClick={createOrder}
@@ -528,7 +588,7 @@ const PersonalOrders = () => {
                 sx={{
                   py: 1.5,
                   fontWeight: "bold",
-                  borderRadius: "20px",
+                  borderRadius: "10px",
                   boxShadow: "0 4px 12px rgba(0, 128, 0, 0.3)",
                   fontFamily: "'Itim', cursive",
                   fontSize: "1.2rem",
@@ -544,48 +604,52 @@ const PersonalOrders = () => {
                 }}
               >
                 {sellStatus === "Success" ? "Sell" : "Processing..."}
-              </Button> */}
+              </Button>
             </>
           )
         ) : orderType === "Buy Orders" ? (
           <>
-            {/* <TableContainer component={Paper}>
-              {account === "" ? (
-                <Table sx={{ minWidth: 200 }} aria-label="order table">
+            <TableContainer component={Paper}>
+              {address === "" ? (
+                <Table>
                   <TableBody>
                     <TableRow>
-                      <TableCell>Please connect your wallet</TableCell>
+                      <TableCell sx={cellCrossPlatform}>
+                        Please connect your wallet
+                      </TableCell>
                     </TableRow>
                   </TableBody>
                 </Table>
               ) : buyOrdersAccount === null ? (
-                <Table sx={{ minWidth: 200 }} aria-label="order table">
+                <Table sx={{ width: "100%" }} aria-label="order table">
                   <TableBody>
                     <TableRow>
-                      <TableCell>No order</TableCell>
+                      <TableCell sx={cellCrossPlatform}>No order</TableCell>
                     </TableRow>
                   </TableBody>
                 </Table>
               ) : (
-                <Table sx={{ maxWidth: 200 }} aria-label="order table">
+                <Table sx={{ width: "100%" }} aria-label="order table">
                   <TableHead>
                     <TableRow>
-                      <TableCell>BGT Price</TableCell>
-                      <TableCell>BGT Amount</TableCell>
-                      <TableCell>Type</TableCell>
-                      <TableCell>Action</TableCell>
+                      <TableCell sx={cellCrossPlatform}>BGT Price</TableCell>
+                      <TableCell sx={cellCrossPlatform}>BGT Amount</TableCell>
+                      <TableCell sx={cellCrossPlatform}>Action</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {displayBuyOrdersAccount.map((order, index) => (
+                    {buyOrdersAccount.map((order, index) => (
                       <TableRow key={order.order_id || index}>
-                        <TableCell>{order.price}</TableCell>
-                        <TableCell>
-                          {(+order.filled_bgt_amount).toFixed(2)}/
-                          {(+order.bgt_amount).toFixed(2)}
+                        <TableCell sx={cellCrossPlatform}>
+                          $ {formatNormalAmount(order.price)}
                         </TableCell>
-                        <TableCell style={{ color: "green" }}>Buy</TableCell>
-                        <TableCell>
+                        <TableCell sx={cellCrossPlatform}>
+                          <CircularPercentage
+                            filled={+order.filled_bgt_amount}
+                            total={+order.bgt_amount}
+                          />
+                        </TableCell>
+                        <TableCell sx={cellCrossPlatform}>
                           <Button
                             variant="contained"
                             color={order.state === 1 ? "success" : "gray"}
@@ -611,39 +675,70 @@ const PersonalOrders = () => {
               rowsPerPage={rowsPerPagePersonalBuy}
               onRowsPerPageChange={handleChangeRowsPerPagePersonalBuy}
               rowsPerPageOptions={[5, 10, 25, 50]}
-            /> */}
+              labelRowsPerPage="Size :"
+              labelDisplayedRows={({ from, to, count }) =>
+                `${from} to ${to} ( ${count} items )`
+              }
+              sx={{
+                color: "#222",
+                fontFamily: "'Itim', cursive",
+                "& .MuiTablePagination-caption": {
+                  color: "#222",
+                  fontFamily: "'Itim', cursive",
+                },
+                "& .MuiTablePagination-selectLabel": {
+                  color: "#222",
+                  fontFamily: "'Itim', cursive",
+                },
+                "& .MuiTablePagination-select": {
+                  color: "#222",
+                  fontFamily: "'Itim', cursive",
+                },
+                "& .MuiTablePagination-actions": {
+                  color: "#222",
+                  fontFamily: "'Itim', cursive",
+                },
+                "& .MuiTablePagination-displayedRows": {
+                  color: "#222",
+                  fontFamily: "'Itim', cursive",
+                },
+                textAlign: "center",
+              }}
+            />
           </>
         ) : (
           <>
-            {/* <TableContainer component={Paper}>
-              {account === "" ? (
-                <Table sx={{ minWidth: 200 }} aria-label="order table">
+            <TableContainer component={Paper}>
+              {address === "" ? (
+                <Table sx={{ width: "100%" }} aria-label="order table">
                   <TableBody>
                     <TableRow>
-                      <TableCell>Please connect your wallet</TableCell>
+                      <TableCell sx={cellCrossPlatform}>
+                        Please connect your wallet
+                      </TableCell>
                     </TableRow>
                   </TableBody>
                 </Table>
               ) : sellOrdersAccount === null ? (
-                <Table sx={{ minWidth: 200 }} aria-label="order table">
+                <Table sx={{ width: "100%" }} aria-label="order table">
                   <TableBody>
                     <TableRow>
-                      <TableCell>No order</TableCell>
+                      <TableCell sx={cellCrossPlatform}>No order</TableCell>
                     </TableRow>
                   </TableBody>
                 </Table>
               ) : (
-                <Table sx={{ maxWidth: 100 }} aria-label="order table">
+                <Table sx={{ width: "100%" }} aria-label="order table">
                   <TableHead>
                     <TableRow>
-                      <TableCell>Premium</TableCell>
-                      <TableCell>Sold Amount</TableCell>
-                      <TableCell>Profit</TableCell>
-                      <TableCell>Action</TableCell>
+                      <TableCell sx={cellCrossPlatform}>Premium</TableCell>
+                      <TableCell sx={cellCrossPlatform}>Sold Amount</TableCell>
+                      <TableCell sx={cellCrossPlatform}>Profit</TableCell>
+                      <TableCell sx={cellCrossPlatform}>Action</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {displaySellOrdersAccount.map((order, index) => (
+                    {sellOrdersAccount.map((order, index) => (
                       <TableRow key={order.order_id || index}>
                         <TableCell>{(order.markup - 10000) / 100}%</TableCell>
                         <TableCell>
@@ -686,7 +781,36 @@ const PersonalOrders = () => {
               rowsPerPage={rowsPerPagePersonalSell}
               onRowsPerPageChange={handleChangeRowsPerPagePersonalSell}
               rowsPerPageOptions={[5, 10, 25, 50, 100]}
-            /> */}
+              labelRowsPerPage="Size :"
+              labelDisplayedRows={({ from, to, count }) =>
+                `${from} to ${to} ( ${count} items )`
+              }
+              sx={{
+                color: "#222",
+                fontFamily: "'Itim', cursive",
+                "& .MuiTablePagination-caption": {
+                  color: "#222",
+                  fontFamily: "'Itim', cursive",
+                },
+                "& .MuiTablePagination-selectLabel": {
+                  color: "#222",
+                  fontFamily: "'Itim', cursive",
+                },
+                "& .MuiTablePagination-select": {
+                  color: "#222",
+                  fontFamily: "'Itim', cursive",
+                },
+                "& .MuiTablePagination-actions": {
+                  color: "#222",
+                  fontFamily: "'Itim', cursive",
+                },
+                "& .MuiTablePagination-displayedRows": {
+                  color: "#222",
+                  fontFamily: "'Itim', cursive",
+                },
+                textAlign: "center",
+              }}
+            />
           </>
         )}
       </Box>
