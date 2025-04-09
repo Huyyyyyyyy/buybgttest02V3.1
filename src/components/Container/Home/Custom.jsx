@@ -2,7 +2,6 @@ import React from "react";
 import { Box, CircularProgress, Typography } from "@mui/material";
 
 const CircularPercentage = ({ filled, total }) => {
-  filled = 1.2;
   let percentage = total > 0 ? (filled / total) * 100 : 0;
   let circleColor = "";
   if (filled === 0) {
