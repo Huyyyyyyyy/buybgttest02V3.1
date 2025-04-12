@@ -97,9 +97,9 @@ const PersonalOrders = () => {
 
   useEffect(() => {
     if (address !== "" && orderType == "Sell Orders") {
-      fetchAccountSellOrders(pagePersonalBuy, rowsPerPagePersonalBuy);
+      fetchAccountSellOrders(pagePersonalSell, rowsPerPagePersonalSell);
     }
-  }, [pagePersonalBuy, rowsPerPagePersonalBuy, address, orderType]);
+  }, [pagePersonalSell, rowsPerPagePersonalSell, address, orderType]);
 
   //custom style
   const cellCrossPlatform = {
@@ -395,7 +395,7 @@ const PersonalOrders = () => {
                 color="success"
                 onClick={createOrder}
                 fullWidth
-                disabled={buyStatus === "Success" ? false : true}
+                disabled={buyStatus !== "Success" || +amountToBuy < 10 ? true : false}
                 sx={{
                   py: 1.5,
                   fontWeight: "bold",
@@ -653,7 +653,7 @@ const PersonalOrders = () => {
           )
         ) : orderType === "Buy Orders" ? (
           <>
-            <TableContainer component={Paper}>
+            <TableContainer component={Paper} sx={{ maxHeight: "400px", overflowY: "auto" }}>
               {address === "" ? (
                 <Table>
                   <TableBody>
@@ -755,7 +755,7 @@ const PersonalOrders = () => {
           </>
         ) : (
           <>
-            <TableContainer component={Paper}>
+            <TableContainer component={Paper} sx={{ maxHeight: "400px", overflowY: "auto" }}>
               {address === "" ? (
                 <Table sx={{ width: "100%" }} aria-label="order table">
                   <TableBody>
@@ -787,15 +787,15 @@ const PersonalOrders = () => {
                   <TableBody>
                     {sellOrdersAccount.map((order, index) => (
                       <TableRow key={order.order_id || index}>
-                        <TableCell>{(order.markup - 10000) / 100}%</TableCell>
-                        <TableCell>
+                        <TableCell sx={cellCrossPlatform}>{(order.markup - 10000) / 100}%</TableCell>
+                        <TableCell sx={cellCrossPlatform}>
                           {+order.unclaimed_bgt < 0.01
                             ? "<0.01"
                             : +order.unclaimed_bgt == 0
-                            ? "0.00"
-                            : (+order.unclaimed_bgt).toFixed(3)}
+                              ? "0.00"
+                              : (+order.unclaimed_bgt).toFixed(3)}
                         </TableCell>
-                        <TableCell>
+                        <TableCell sx={cellCrossPlatform}>
                           {(
                             beraPrice *
                             +order.unclaimed_bgt *

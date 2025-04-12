@@ -31,7 +31,7 @@ export const formatTime = (time) => {
 };
 
 export const formatAddress = (address) => {
-  const rs = `${address.slice(0, 3)}...${address.slice(-3)}`;
+  const rs = `${address.slice(0, 5)}...${address.slice(-3)}`;
   return rs;
 };
 
