@@ -320,7 +320,7 @@ export function useWallet() {
           }
         );
         const receipt = await tx.wait();
-        // await fetchAccountBuyOrders(pagePersonalBuy, rowsPerPagePersonalBuy);
+        await fetchAccountBuyOrders(pagePersonalBuy, rowsPerPagePersonalBuy);
         setBuyStatus("Success");
       } else {
         setSellStatus("Processing");
@@ -352,7 +352,7 @@ export function useWallet() {
           }
         );
         const receipt = await tx.wait();
-        // await fetchAccountSellOrders(pagePersonalBuy, rowsPerPagePersonalBuy);
+        await fetchAccountSellOrders(pagePersonalBuy, rowsPerPagePersonalBuy);
         setSellStatus("Success");
       }
     } catch (error) {
@@ -473,6 +473,7 @@ export function useWallet() {
       handleChangePagePersonalSell,
       handleChangeRowsPerPagePersonalSell,
       closeOrder,
+      setAmountToBuy,
     },
     paginationData: { page, rowsPerPage, total },
     paginationFunctions: {

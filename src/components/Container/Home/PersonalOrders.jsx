@@ -71,6 +71,7 @@ const PersonalOrders = () => {
       handleChangePagePersonalSell,
       handleChangeRowsPerPagePersonalSell,
       closeOrder,
+      setAmountToBuy,
     },
   } = useContext(WalletContext);
 
@@ -82,8 +83,10 @@ const PersonalOrders = () => {
 
   //fetch vaults balance when trigger loaded vaults list
   useEffect(() => {
-    fetchVaultBalances();
-  }, [rewardVaults]);
+    if (orderType === "Sell") {
+      fetchVaultBalances();
+    }
+  }, [rewardVaults, orderType]);
   //fetch vaults balance when trigger loaded vaults list
 
   useEffect(() => {
@@ -340,7 +343,7 @@ const PersonalOrders = () => {
                     },
                   }}
                   value={amountToBuy}
-                  onChange={(e) => setAmount(e.target.value)}
+                  onChange={(e) => setAmountToBuy(e.target.value)}
                 />
               </Box>
 
@@ -434,8 +437,34 @@ const PersonalOrders = () => {
             </>
           ) : (
             <>
-              <FormControl fullWidth sx={{ mb: 2 }}>
-                <InputLabel id="vault-label">Reward Vault</InputLabel>
+              <FormControl
+                fullWidth
+                sx={{
+                  mb: 2,
+                  "& .MuiInputLabel-outlined": {
+                    fontFamily: "'Itim', cursive",
+                    color: "#f5f5f5",
+                    "&.Mui-focused": {
+                      color: "#f5f5f5",
+                    },
+                  },
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: "12px",
+                    "& fieldset": {
+                      border: "3px solid #f5f5f5",
+                    },
+                    "&:hover fieldset": {
+                      border: "3px solid #f5f5f5",
+                    },
+                    "&.Mui-focused fieldset": {
+                      border: "3px solid #f5f5f5",
+                    },
+                  },
+                }}
+              >
+                <InputLabel id="vault-label" sx={cellCrossPlatform}>
+                  Reward Vault
+                </InputLabel>
                 <Select
                   labelId="vault-label"
                   value={selectedVault}
@@ -443,12 +472,11 @@ const PersonalOrders = () => {
                   onChange={(e) => setSelectedVault(e.target.value)}
                   sx={{
                     borderRadius: "12px",
-                    backgroundColor: "#f5f5f5",
                     fontFamily: "'Itim', cursive",
                   }}
                 >
                   <MenuItem value="">
-                    <em>Choose Vault</em>
+                    <Typography sx={cellCrossPlatform}>Choose Vault</Typography>
                   </MenuItem>
                   {vaultsWithBalance.map((vault) =>
                     vault.name !== "" && vault.icon !== "" ? (
@@ -465,7 +493,7 @@ const PersonalOrders = () => {
                             width: "100%",
                           }}
                         >
-                          <Box sx={{ display: "flex", alignItems: "center" }}>
+                          <Box sx={cellCrossPlatform}>
                             <img
                               src={vault.icon}
                               alt={vault.name}
@@ -477,10 +505,7 @@ const PersonalOrders = () => {
                             />
                             {vault.name}
                           </Box>
-                          <Typography
-                            variant="body2"
-                            sx={{ color: "text.secondary" }}
-                          >
+                          <Typography variant="body2" sx={cellCrossPlatform}>
                             {vault.bgtBalance} BGT
                           </Typography>
                         </Box>
@@ -504,7 +529,26 @@ const PersonalOrders = () => {
                   sx={{
                     width: "50%",
                     borderRadius: "12px",
-                    backgroundColor: "#f5f5f5",
+                    "& .MuiInputLabel-outlined": {
+                      fontFamily: "'Itim', cursive",
+                      color: "#f5f5f5",
+                      "&.Mui-focused": {
+                        color: "#f5f5f5",
+                      },
+                    },
+                    "& .MuiOutlinedInput-root": {
+                      color: "white",
+                      borderRadius: "12px",
+                      "& fieldset": {
+                        border: "3px solid #f5f5f5",
+                      },
+                      "&:hover fieldset": {
+                        border: "3px solid #f5f5f5",
+                      },
+                      "&.Mui-focused fieldset": {
+                        border: "3px solid #f5f5f5",
+                      },
+                    },
                   }}
                   value={premiumRate}
                   onChange={(e) => setPremiumRate(e.target.value)}
@@ -695,12 +739,15 @@ const PersonalOrders = () => {
                   fontFamily: "'Itim', cursive",
                 },
                 "& .MuiTablePagination-actions": {
-                  color: "#222",
+                  color: "white !important",
                   fontFamily: "'Itim', cursive",
                 },
                 "& .MuiTablePagination-displayedRows": {
                   color: "#222",
                   fontFamily: "'Itim', cursive",
+                },
+                "& .MuiTablePagination-actions .MuiSvgIcon-root": {
+                  color: "#222",
                 },
                 textAlign: "center",
               }}

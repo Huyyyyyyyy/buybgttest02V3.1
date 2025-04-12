@@ -521,6 +521,9 @@ const OrdersMarket = () => {
               color: "#fff",
               fontFamily: "'Itim', cursive",
             },
+            "& .MuiTablePagination-actions .MuiSvgIcon-root": {
+              color: "white",
+            },
             textAlign: "center",
           }}
         />
