@@ -1,9 +1,16 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import App from './App.jsx'
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import App from './App.jsx';
+import DelegatePage from './DelegatePage.jsx'; // Import DelegatePage
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <App />
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<App />} />
+        <Route path="/boost" element={<DelegatePage />} />
+      </Routes>
+    </BrowserRouter>
   </StrictMode>,
-)
+);

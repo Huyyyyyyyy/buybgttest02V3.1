@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { ethers } from "ethers";
+import { useNavigate } from 'react-router-dom'; // Thêm import này
 import {
   Box,
   Container,
@@ -81,7 +82,7 @@ export default function BGTMarketApp() {
 
   const percentagePresets = [10, 50, 100, 1000];
   const [vaultsWithBalance, setVaultsWithBalance] = useState(rewardVaults);
-
+  const navigate = useNavigate(); // Khai báo navigate
 
   //status of open buy/sell order
   const [buyStatus, setBuyStatus] = useState("Success");
@@ -529,35 +530,65 @@ export default function BGTMarketApp() {
     window.open(url, "_blank"); // Mở trang trong tab mới
   };
 
-  // Menu ở Drawer
-  const list = (anchor) => (
-    <Box
-      sx={{ width: anchor === "left" ? 250 : "auto" }}
-      role="presentation"
-      onClick={toggleDrawer(anchor, false)}
-      onKeyDown={toggleDrawer(anchor, false)}
-    >
-      <List>
-        {["Market", "About TTT", "Delegate for TTT"].map((text, index) => (
-          <ListItem key={text} disablePadding>
-            <ListItemButton
-              onClick={() =>
-                handleClick(
-                  text === "Market"
-                    ? "https://bgt.zone"
-                    : text === "About TTT"
-                      ? "https://tienthuattoan.com/"
-                      : "https://hub.berachain.com/validators/0x89884fc95abcb82736d768fc8ad4fdf4cb2112496974ae05440d835d0e93216643ae212b365fb6d9d2501d76d0925ef3/"
-                )
-              }
-            >
-              <ListItemText primary={text} />
-            </ListItemButton>
-          </ListItem>
-        ))}
-      </List>
-    </Box>
-  );
+  // // Menu ở Drawer
+  // const list = (anchor) => (
+  //   <Box
+  //     sx={{
+  //       width: anchor === "left" ? 250 : "auto",
+  //       backgroundColor: "#ffc000", // Màu vàng cho Box
+  //       height: "100%", // Đảm bảo Box chiếm toàn bộ chiều cao
+  //       display: "flex", // Sử dụng flex để List chiếm toàn bộ không gian
+  //       flexDirection: "column", // Các phần tử xếp dọc
+  //     }}
+  //     role="presentation"
+  //     onClick={toggleDrawer(anchor, false)}
+  //     onKeyDown={toggleDrawer(anchor, false)}
+  //   >
+  //     <List
+  //       sx={{
+  //         width: "100%", // List chiếm toàn bộ chiều rộng của Box
+  //         backgroundColor: "#ffc000", // Đảm bảo List cũng có màu vàng
+  //         padding: 0, // Loại bỏ padding mặc định của List để không có khoảng trống
+  //       }}
+  //     >
+  //       {["Market", "About TTT", "Boost for TTT"].map((text, index) => (
+  //         <ListItem
+  //           key={text}
+  //           disablePadding // Loại bỏ padding mặc định của ListItem
+  //           sx={{
+  //             backgroundColor: "#ffc000", // Đảm bảo mỗi ListItem cũng có màu vàng
+  //           }}
+  //         >
+  //           <ListItemButton
+  //             onClick={() =>
+  //               handleClick(
+  //                 text === "Market"
+  //                   ? "https://bgt.zone"
+  //                   : text === "About TTT"
+  //                     ? "https://tienthuattoan.com/"
+  //                     : "https://hub.berachain.com/validators/0x89884fc95abcb82736d768fc8ad4fdf4cb2112496974ae05440d835d0e93216643ae212b365fb6d9d2501d76d0925ef3/"
+  //               )
+  //             }
+  //             sx={{
+  //               "&:hover": {
+  //                 backgroundColor: "#FFD700", // Màu vàng đậm hơn khi hover
+  //               },
+  //             }}
+  //           >
+  //             <ListItemText
+  //               primary={text}
+  //               primaryTypographyProps={{
+  //                 fontFamily: "Itim, cursive",
+  //                 fontWeight: "bold",
+  //                 color: "#000", // Chữ đen để nổi trên nền vàng
+  //               }}
+  //             />
+  //           </ListItemButton>
+  //         </ListItem>
+  //       ))}
+  //     </List>
+  //   </Box>
+  // );
 
   return (
     <Box
@@ -571,274 +602,275 @@ export default function BGTMarketApp() {
         flexWrap: "wrap",
         gap: 4,
         flexDirection: { xs: "row", md: "row", lg: "column" },
+        pt: { xs: 10, sm: 10, md: 20 }, // Thêm padding-top để đẩy body xuống dưới header
       }}
     >
+
       {/* header */}
 
       <Box
-        sx={{
-          width: "100%",
-          // maxWidth: { xs: "100%", md: "1700px" },
-          display: "flex",
-          justifyContent: { xs: "space-between", sm: "space-between", md: "space-between" },
+  sx={{
+    maxWidth: "100%",
+    position: "fixed",
+    backdropFilter: "blur(10px)",
+    backgroundColor: "rgba(104, 77, 2, 0.2)",
+    zIndex: 99,
+    top: 0,
+    left: 0,
+    right: 0,
+  }}
+>
+  <Box
+    sx={{
+      display: "flex",
+      justifyContent: {
+        xs: "space-between",
+        sm: "space-between",
+        md: "space-between",
+      },
+      alignItems: "center",
+      marginLeft: "auto",
+      marginRight: "auto",
+      padding: "4px 0",
+    }}
+  >
+    {/* Mobile Menu Icon */}
+    <Box
+      sx={{
+        display: { md: "none", lg: "none" },
+        width: { xs: "30%", sm: "30%", lg: "20%" },
+        alignItems: "center",
+      }}
+    >
+      {["left"].map((anchor) => (
+        <React.Fragment key={anchor}>
+          <Button onClick={toggleDrawer(anchor, true)}>
+            <MenuIcon
+              sx={{
+                fontSize: "30px",
+                color: "black",
+                background: "#FFEA00",
+                borderRadius: "10px",
+                padding: "6px",
+              }}
+            />
+          </Button>
+          <Drawer
+            anchor={anchor}
+            open={state[anchor]}
+            onClose={toggleDrawer(anchor, false)}
+          >
+            <Box
+              sx={{
+                width: 250,
+                backgroundColor: "#ffc000",
+                height: "100%",
+              }}
+              role="presentation"
+              onClick={toggleDrawer(anchor, false)}
+              onKeyDown={toggleDrawer(anchor, false)}
+            >
+              <List>
+                {["Market", "Boost (beta)"].map((text) => (
+                  // , "About TTT"
+                  <ListItem key={text} disablePadding>
+                    <ListItemButton
+                      sx={{
+                        backgroundColor: "#ffc000",
+                        "&:hover": { backgroundColor: "#ffd700" },
+                      }}
+                      onClick={() =>
+                        text === "Market"
+                          ? handleClick("https://bgt.zone")
+                          // : text === "About TTT"
+                          // ? handleClick("https://tienthuattoan.com/")
+                          : navigate("/boost") // Giữ nguyên chức năng navigate
+                      }
+                    >
+                      <ListItemText
+                        primary={text}
+                        primaryTypographyProps={{
+                          fontFamily: "Itim, cursive",
+                          fontSize: "20px",
+                        }}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                ))}
+              </List>
+            </Box>
+          </Drawer>
+        </React.Fragment>
+      ))}
+    </Box>
+
+    {/* Logo */}
+    <Box
+      sx={{
+        width: { xs: "30%", sm: "30%", md: "15%", lg: "25%" },
+        display: "flex",
+        justifyContent: "center",
+      }}
+    >
+      <img
+        src="https://dr9rfdtcol2ay.cloudfront.net/assets/logomain.png"
+        alt="logo"
+        style={{
+          width: "90px",
+          height: "50px",
+          userSelect: "none",
           alignItems: "center",
-          marginLeft: "auto",
-          marginRight: "auto",
-          padding: "30px 0",
+        }}
+      />
+    </Box>
+
+    {/* Desktop Menu */}
+    <Box
+      sx={{
+        display: { xs: "none", md: "flex", lg: "flex" },
+        alignItems: "center",
+        justifyContent: "space-between",
+        width: { md: "60%", lg: "50%" },
+        padding: "0 15px",
+      }}
+    >
+      <Button
+        variant="text"
+        sx={{
+          color: "#fff",
+          fontSize: "20px",
+          width: "30%",
+          textShadow: `
+            -1px -1px 0 black,
+            1px -1px 0 black,
+            -1px 1px 0 black,
+            1px 1px 0 black
+          `,
+          fontFamily: "Itim, cursive",
+          fontWeight: "400",
+          textTransform: "none",
+          display: "flex",
+          "&:hover": {
+            background: "none",
+          },
+          borderBottom: "5px solid yellow",
         }}
       >
-        {/* width dưới 768px */}
-        <Box sx={{ display: { md: "flex", lg: "none" }, width: { md: "15%", } }}>
-          {["left"].map((anchor) => (
-            <React.Fragment key={anchor}>
-              <Button onClick={toggleDrawer(anchor, true)}>
-                <MenuIcon sx={{ fontSize: "30px", color: "black", background: "#FFEA00", borderRadius: "10px", padding: "15px" }} />
-              </Button>
-              <Drawer
-                anchor={anchor}
-                open={state[anchor]}
-                onClose={toggleDrawer(anchor, false)}
-              >
-                {list(anchor)}
-              </Drawer>
-            </React.Fragment>
-          ))}
-        </Box>
-        {/* box logo cty */}
-        <Box
-          sx={{
-            width: { md: "30%", lg: "10%" },
-            display: "flex",
-            justifyContent: "center",
-          }}
-        >
-          <img
-            src="https://dr9rfdtcol2ay.cloudfront.net/assets/TTT.png"
-            alt="logo"
-            style={{
-              width: "90px",
-              height: "90px",
+        <span className="label">Market</span>
+      </Button>
 
-            }}
-          />
-        </Box>
-        {/* box button */}
-        <Box
-          sx={{
-            display: { xs: "none", md: "none", lg: "flex" },
-            alignItems: "center",
-            justifyContent: "space-between",
-            width: { md: "60%", lg: "70%" },
-          }}
-        >
-          {/* Button market */}
-          <Button
-            variant="text"
-            sx={{
-              color: "#fff",
-              fontSize: { sm: "28px", md: "32px" },
-              width: "30%",
-              height: "18px",
-              textShadow: `
-                -1px -1px 0 black,
-                1px -1px 0 black,
-                -1px 1px 0 black,
-                1px 1px 0 black
-              `,
+      {/* <Button
+        variant="text"
+        onClick={() => window.open("https://tienthuattoan.com/")}
+        sx={{
+          color: "#fff",
+          fontSize: "20px",
+          width: "30%",
+          textShadow: `
+            -1px -1px 0 black,
+            1px -1px 0 black,
+            -1px 1px 0 black,
+            1px 1px 0 black
+          `,
+          fontFamily: "Itim, cursive",
+          fontWeight: "400",
+          textTransform: "none",
+          padding: 0,
+          minWidth: "unset",
+          "&:hover": {
+            background: "none",
+            color: "yellow",
+          },
+        }}
+      >
+        <span className="label-1">About TTT</span>
+      </Button> */}
 
-              fontFamily: "Itim, cursive",
-              fontWeight: "400",
-              textTransform: "none",
-              "&:hover": {
-                background: "none",
-              },
-              "& span.label::after": {
-                content: '"   "',
-                display: "block",
-                margin: "4px auto 0 auto",
-                width: "100px",
-                height: "5px",
-                backgroundColor: "#FFEA00",
-                borderRadius: "4px",
-                border: "1px solid black",
-                position: "absolute",
-                top: "26px",
-              },
-            }}
-          >
-            <span className="label">Market</span>
-          </Button>
+      <Button
+        variant="text"
+        onClick={() => navigate("/boost")} // Giữ nguyên chức năng navigate
+        sx={{
+          color: "#fff",
+          fontSize: "20px",
+          width: "30%",
+          textShadow: `
+            -1px -1px 0 black,
+            1px -1px 0 black,
+            -1px 1px 0 black,
+            1px 1px 0 black
+          `,
+          fontFamily: "Itim, cursive",
+          fontWeight: "400",
+          textTransform: "none",
+          padding: 0,
+          minWidth: "unset",
+          "&:hover": {
+            background: "none",
+            color: "yellow",
+          },
+        }}
+      >
+        <span className="label-1">Boost (beta)</span>
+      </Button>
+    </Box>
 
-          {/* Button about */}
-          <Button
-            variant="text"
-            onClick={() => {
-              window.open("https://tienthuattoan.com/");
-            }}
-            sx={{
-              color: "#fff",
-              fontSize: "32px",
-              width: "30%",
-              textShadow: `
-      -1px -1px 0 black,
-      1px -1px 0 black,
-      -1px 1px 0 black,
-      1px 1px 0 black
-     `,
-              // position: "absolute",
-              // top: "76px",
-              // left: "600px",
-              fontFamily: "Itim, cursive",
-              fontWeight: "400",
-              textTransform: "none",
-              padding: 0,
-              minWidth: "unset",
-              "&:hover": {
-                background: "none",
-              },
-            }}
-          >
-            <span className="label-1">About TTT</span>
-          </Button>
-
-          {/* Button Dele */}
-          <Button
-            variant="text"
-            onClick={() => {
-              window.open(
-                "https://hub.berachain.com/validators/0x89884fc95abcb82736d768fc8ad4fdf4cb2112496974ae05440d835d0e93216643ae212b365fb6d9d2501d76d0925ef3/"
-              );
-            }}
-            sx={{
-              color: "#fff",
-              fontSize: "32px",
-              width: "40%",
-              textShadow: `
-      -1px -1px 0 black,
-      1px -1px 0 black,
-      -1px 1px 0 black,
-      1px 1px 0 black
-     `,
-              // position: "absolute",
-              // top: "76px",
-              // right: "700px",
-              fontFamily: "Itim, cursive",
-              fontWeight: "400",
-              textTransform: "none",
-              padding: 0,
-              minWidth: "unset",
-              "&:hover": {
-                background: "none",
-              },
-            }}
-          >
-            <span className="label-1">Delegate for TTT</span>
-          </Button>
-        </Box>
-        {/* box connect-wallet */}
-        <Box
-          sx={{
-            width: { md: "30%", lg: "20%" },
-            display: "flex",
-            alignItems: "center",
-            justifyContent: { md: "flex-end", lg: "space-around" },
-          }}
-        >
-          <Box
-            sx={{
-              position: "relative",
-              paddingTop: "10px",
-              display: { xs: "none", sm: "none", md: "none", lg: "none", xl: "flex" },
-            }}
-          >
-            {/* icon bera */}
-            <img
-              src="https://dr9rfdtcol2ay.cloudfront.net/assets/iconnetwork.png"
-              alt="iconnetwork"
-              style={{
-                // position: "absolute",
-                // top: "58px",
-                // right: "430px",
-                width: { md: "80%", lg: "100%" },
-                height: "60px",
-                maxWidth: "60px",
-                objectFit: "cover",
-              }}
-            ></img>
-            {/* icon green(tích hoạt động) */}
-            <img
-              src="https://dr9rfdtcol2ay.cloudfront.net/assets/icongreen.png"
-              alt="icongreen"
-              style={{
-                width: "12px",
-                height: "12px",
-                position: "absolute",
-                // top: "",
-                right: "0",
-              }}
-            />
-          </Box>
-
-          <Button
-            variant="outlined"
-            onClick={connectWallet}
-            sx={{
-              backgroundColor: "#FFEA00",
-              border: "1.5px solid black",
-              color: "#000000",
-              fontWeight: "bold",
-              fontSize: { xs: "9px", sm: "11px", md: "13px" },
-              // position: "absolute",
-              // top: "55px",
-              // right: "210px",
-              zIndex: 10,
-              borderRadius: "200px",
-              fontFamily: "Itim, cursive",
-              padding: "10px 18px",
-
-              "&:hover": {
-                backgroundColor: "#fff",
-                color: "#000",
-                border: "1px solid black",
-              },
-            }}
-          >
-            <img
-              src="https://dr9rfdtcol2ay.cloudfront.net/assets/iconwallet.png"
-              alt="wallet icon"
-              style={{
-                width: { xs: "60%", sm: "80%", md: "100%" },
-                maxWidth: "40px",
-                // height: "40px",
-                marginRight: "10px",
-              }}
-            />
-            <Box sx={{}}>
-              {account
-                ? ` ${account.slice(0, 6)}...${account.slice(38, 42)}`
-                : "Connect Wallet"}
-            </Box>
-
-          </Button>
-        </Box>
+    {/* Connect Wallet Button */}
+    <Button
+      variant="outlined"
+      onClick={connectWallet}
+      sx={{
+        width: { xs: "30%", sm: "30%", md: "25%", lg: "25%" },
+        backgroundColor: "#FFEA00",
+        border: "1.5px solid black",
+        color: "#000000",
+        fontWeight: "bold",
+        fontSize: { xs: "9px", sm: "11px", md: "13px" },
+        zIndex: 10,
+        fontFamily: "Itim, cursive",
+        "&:hover": {
+          backgroundColor: "#ffc000",
+          color: "#000",
+          border: "1px solid black",
+        },
+      }}
+    >
+      <Box
+        component="img"
+        src="https://dr9rfdtcol2ay.cloudfront.net/assets/iconwallet.png"
+        alt="wallet icon"
+        sx={{
+          maxWidth: "15%",
+          mr: "5px",
+        }}
+      />
+      <Box>
+        {account
+          ? ` ${account.slice(0, 6)}...${account.slice(38, 42)}`
+          : "Connect Wallet"}
       </Box>
+    </Button>
+  </Box>
+</Box>
 
-      {/* Box value */}
+      {/* Box value  */}
       <Box
         sx={{
           display: "flex",
-          flexWrap: "wrap",
+          flexDirection: { xs: "column", sm: "row" }, // Xếp dọc trên xs
           justifyContent: "space-evenly",
           width: "100%",
+          px: { xs: 0, sm: 2 }, // Loại bỏ padding ngang trên xs để sát viền
+
         }}
       >
         {/* Form hiển thị value */}
         <Container
           sx={{
-            maxWidth: { xs: "80%", md: "90%", lg: "60%" },
+            maxWidth: { xs: "95%", md: "50%", lg: "60%" },
             bgcolor: "black",
             opacity: "0.8",
-            borderRadius: "50px",
+
+            borderRadius: { xs: "15px", sm: "15px" },
             p: 4,
             boxShadow: "0 8px 30px rgba(0,0,0,0.1)",
             mb: 10,
@@ -856,7 +888,7 @@ export default function BGTMarketApp() {
               display: "flex", // Sắp xếp chữ và ảnh theo hàng ngang
               alignItems: "center", // Canh giữa chữ và ảnh
               justifyContent: "center", // Canh giữa cả ảnh và chữ
-              fontSize: { xs: "20px", sm: "40px", md: "60px" },
+              fontSize: { xs: "15px", sm: "40px", md: "60px" },
             }}
           >
             <img
@@ -873,7 +905,7 @@ export default function BGTMarketApp() {
             onChange={(event, newValue) => {
               if (newValue != null) {
                 console.log(activeTab);
-                setActiveTab(newValue)
+                setActiveTab(newValue);
               }
             }}
             fullWidth
@@ -885,23 +917,23 @@ export default function BGTMarketApp() {
               "& .MuiToggleButton-root": {
                 flex: 1,
                 fontWeight: "bold",
-                fontSize: "1rem",
+                fontSize: { xs: "0.8rem", sm: "1rem" }, // Giảm fontSize trên xs
                 color: "#fff",
                 border: "none",
-                borderRadius: "999px",
+                borderRadius: "15px",
                 textTransform: "none",
                 fontFamily: "Itim, cursive",
                 transition: "all 0.05s",
                 "&.Mui-selected": {
                   backgroundColor: "#FFEA00",
                   color: "black",
-                  borderRadius: "999px",
+                  borderRadius: "15px",
                 },
                 "&:hover": {
-                  backgroundColor: "inherit", // Keeps non-selected buttons unchanged on hover
+                  backgroundColor: "inherit",
                 },
                 "&.Mui-selected:hover": {
-                  backgroundColor: "#FFEA00", // Keeps selected buttons #FFEA00 on hover
+                  backgroundColor: "#FFEA00",
                 },
               },
             }}
@@ -929,7 +961,7 @@ export default function BGTMarketApp() {
                         color: "#FFD700",
                         fontWeight: "bold",
                         border: 0,
-                        fontSize: "20px",
+                        fontSize: { xs: "12px", sm: "16px", md: "20px" }, // Giảm fontSize trên xs
                       }}
                     >
                       BGT Amount
@@ -940,7 +972,7 @@ export default function BGTMarketApp() {
                         color: "#FFD700",
                         fontWeight: "bold",
                         border: 0,
-                        fontSize: "20px",
+                        fontSize: { xs: "12px", sm: "16px", md: "20px" }, // Giảm fontSize trên xs
                       }}
                     >
                       Premium
@@ -951,7 +983,7 @@ export default function BGTMarketApp() {
                         color: "#FFD700",
                         fontWeight: "bold",
                         border: 0,
-                        fontSize: "20px",
+                        fontSize: { xs: "12px", sm: "16px", md: "20px" }, // Giảm fontSize trên xs
                       }}
                     >
                       Estimated to pay
@@ -962,7 +994,7 @@ export default function BGTMarketApp() {
                         color: "#FFD700",
                         fontWeight: "bold",
                         border: 0,
-                        fontSize: "20px",
+                        fontSize: { xs: "12px", sm: "16px", md: "20px" }, // Giảm fontSize trên xs
                       }}
                     >
                       Address
@@ -973,7 +1005,7 @@ export default function BGTMarketApp() {
                         color: "#FFD700",
                         fontWeight: "bold",
                         border: 0,
-                        fontSize: "20px",
+                        fontSize: { xs: "12px", sm: "16px", md: "20px" }, // Giảm fontSize trên xs
                       }}
                     >
                       Hash
@@ -984,7 +1016,7 @@ export default function BGTMarketApp() {
                         color: "#FFD700",
                         fontWeight: "bold",
                         border: 0,
-                        fontSize: "20px",
+                        fontSize: { xs: "12px", sm: "16px", md: "20px" }, // Giảm fontSize trên xs
                       }}
                     >
                       Time
@@ -995,7 +1027,7 @@ export default function BGTMarketApp() {
                         color: "#FFD700",
                         fontWeight: "bold",
                         border: 0,
-                        fontSize: "20px",
+                        fontSize: { xs: "12px", sm: "16px", md: "20px" }, // Giảm fontSize trên xs
                       }}
                     >
                       Action
@@ -1009,7 +1041,7 @@ export default function BGTMarketApp() {
                         color: "#FFD700",
                         fontWeight: "bold",
                         border: 0,
-                        fontSize: "20px",
+                        fontSize: { xs: "12px", sm: "16px", md: "20px" }, // Giảm fontSize trên xs
                       }}
                     >
                       BGT Price
@@ -1020,7 +1052,7 @@ export default function BGTMarketApp() {
                         color: "#FFD700",
                         fontWeight: "bold",
                         border: 0,
-                        fontSize: "20px",
+                        fontSize: { xs: "12px", sm: "16px", md: "20px" }, // Giảm fontSize trên xs
                       }}
                     >
                       BGT Amount
@@ -1031,7 +1063,7 @@ export default function BGTMarketApp() {
                         color: "#FFD700",
                         fontWeight: "bold",
                         border: 0,
-                        fontSize: "20px",
+                        fontSize: { xs: "12px", sm: "16px", md: "20px" }, // Giảm fontSize trên xs
                       }}
                     >
                       Paid
@@ -1042,7 +1074,7 @@ export default function BGTMarketApp() {
                         color: "#FFD700",
                         fontWeight: "bold",
                         border: 0,
-                        fontSize: "20px",
+                        fontSize: { xs: "12px", sm: "16px", md: "20px" }, // Giảm fontSize trên xs
                       }}
                     >
                       Address
@@ -1053,7 +1085,7 @@ export default function BGTMarketApp() {
                         color: "#FFD700",
                         fontWeight: "bold",
                         border: 0,
-                        fontSize: "20px",
+                        fontSize: { xs: "12px", sm: "16px", md: "20px" }, // Giảm fontSize trên xs
                       }}
                     >
                       Hash
@@ -1064,7 +1096,7 @@ export default function BGTMarketApp() {
                         color: "#FFD700",
                         fontWeight: "bold",
                         border: 0,
-                        fontSize: "20px",
+                        fontSize: { xs: "12px", sm: "16px", md: "20px" }, // Giảm fontSize trên xs
                       }}
                     >
                       Time
@@ -1075,7 +1107,7 @@ export default function BGTMarketApp() {
                         color: "#FFD700",
                         fontWeight: "bold",
                         border: 0,
-                        fontSize: "20px",
+                        fontSize: { xs: "12px", sm: "16px", md: "20px" }, // Giảm fontSize trên xs
                       }}
                     >
                       Action
@@ -1086,7 +1118,7 @@ export default function BGTMarketApp() {
                         color: "#FFD700",
                         fontWeight: "bold",
                         border: 0,
-                        fontSize: "20px",
+                        fontSize: { xs: "12px", sm: "16px", md: "20px" }, // Giảm fontSize trên xs
                       }}
                     >
                       Vault
@@ -1101,7 +1133,7 @@ export default function BGTMarketApp() {
                     <TableCell sx={{ border: 0 }}>
                       <span
                         style={{
-                          fontSize: "24px",
+                          fontSize: { xs: "16px", sm: "20px", md: "24px" }, // Giảm fontSize trên xs
                           color: "#fff",
                           fontFamily: "'Itim', cursive",
                         }}
@@ -1121,7 +1153,7 @@ export default function BGTMarketApp() {
                           sx={{
                             color: "#fff",
                             fontFamily: "'Itim', cursive",
-                            fontSize: "20px",
+                            fontSize: { xs: "12px", sm: "16px", md: "20px" }, // Giảm fontSize trên xs
                             border: 0,
                           }}
                         >
@@ -1145,7 +1177,7 @@ export default function BGTMarketApp() {
                           sx={{
                             color: "#fff",
                             fontFamily: "'Itim', cursive",
-                            fontSize: "20px",
+                            fontSize: { xs: "12px", sm: "16px", md: "20px" }, // Giảm fontSize trên xs
                             border: 0,
                           }}
                         >
@@ -1155,7 +1187,7 @@ export default function BGTMarketApp() {
                           sx={{
                             color: "#fff",
                             fontFamily: "'Itim', cursive",
-                            fontSize: "20px",
+                            fontSize: { xs: "12px", sm: "16px", md: "20px" }, // Giảm fontSize trên xs
                             border: 0,
                           }}
                         >
@@ -1179,7 +1211,7 @@ export default function BGTMarketApp() {
                           sx={{
                             color: "#fff",
                             fontFamily: "'Itim', cursive",
-                            fontSize: "20px",
+                            fontSize: { xs: "12px", sm: "16px", md: "20px" }, // Giảm fontSize trên xs
                             border: 0,
                           }}
                         >
@@ -1190,7 +1222,7 @@ export default function BGTMarketApp() {
                           sx={{
                             color: "#fff",
                             fontFamily: "'Itim', cursive",
-                            fontSize: "20px",
+                            fontSize: { xs: "12px", sm: "16px", md: "20px" }, // Giảm fontSize trên xs
                             border: 0,
                           }}
                         >
@@ -1210,7 +1242,7 @@ export default function BGTMarketApp() {
                           sx={{
                             color: "#fff",
                             fontFamily: "'Itim', cursive",
-                            fontSize: "20px",
+                            fontSize: { xs: "12px", sm: "16px", md: "20px" }, // Giảm fontSize trên xs
                             border: 0,
                           }}
                         >
@@ -1265,7 +1297,11 @@ export default function BGTMarketApp() {
                                     "0xc2baa8443cda8ebe51a640905a8e6bc4e1f9872c"
                                   )
                             }
-                            sx={{ borderRadius: "12px" }}
+                            sx={{
+                              borderRadius: "12px",
+                              fontSize: { xs: "0.8rem", sm: "1rem" }, // Giảm fontSize trên xs
+                              py: { xs: 0.5, sm: 1 }, // Giảm padding y trên xs
+                            }}
                           >
                             {activeTab === "Buy" ? "Buy" : "Sell"}
                           </Button>
@@ -1280,7 +1316,7 @@ export default function BGTMarketApp() {
                           sx={{
                             color: "#fff",
                             fontFamily: "'Itim', cursive",
-                            fontSize: "20px",
+                            fontSize: { xs: "12px", sm: "16px", md: "20px" }, // Giảm fontSize trên xs
                             border: 0,
                           }}
                         >
@@ -1290,7 +1326,7 @@ export default function BGTMarketApp() {
                           sx={{
                             color: "#fff",
                             fontFamily: "'Itim', cursive",
-                            fontSize: "20px",
+                            fontSize: { xs: "12px", sm: "16px", md: "20px" }, // Giảm fontSize trên xs
                             border: 0,
                           }}
                         >
@@ -1311,7 +1347,7 @@ export default function BGTMarketApp() {
                           sx={{
                             color: "#fff",
                             fontFamily: "'Itim', cursive",
-                            fontSize: "20px",
+                            fontSize: { xs: "12px", sm: "16px", md: "20px" }, // Giảm fontSize trên xs
                             border: 0,
                           }}
                         >
@@ -1331,7 +1367,7 @@ export default function BGTMarketApp() {
                           sx={{
                             color: "#fff",
                             fontFamily: "'Itim', cursive",
-                            fontSize: "20px",
+                            fontSize: { xs: "12px", sm: "16px", md: "20px" }, // Giảm fontSize trên xs
                             border: 0,
                           }}
                         >
@@ -1342,7 +1378,7 @@ export default function BGTMarketApp() {
                           sx={{
                             color: "#fff",
                             fontFamily: "'Itim', cursive",
-                            fontSize: "20px",
+                            fontSize: { xs: "12px", sm: "16px", md: "20px" }, // Giảm fontSize trên xs
                             border: 0,
                           }}
                         >
@@ -1361,7 +1397,7 @@ export default function BGTMarketApp() {
                           sx={{
                             color: "#fff",
                             fontFamily: "'Itim', cursive",
-                            fontSize: "20px",
+                            fontSize: { xs: "12px", sm: "16px", md: "20px" }, // Giảm fontSize trên xs
                             border: 0,
                           }}
                         >
@@ -1408,12 +1444,14 @@ export default function BGTMarketApp() {
                             color={activeTab === "Buy" ? "success" : "error"}
                             onClick={
                               activeTab === "Buy"
-                                ? () =>
-                                  fillSellOrder(order.order_id, order.amount)
-                                : () =>
-                                  fillBuyOrder(order.order_id, vaultForFill)
+                                ? () => fillSellOrder(order.order_id, order.amount)
+                                : () => fillBuyOrder(order.order_id, vaultForFill)
                             }
-                            sx={{ borderRadius: "12px" }}
+                            sx={{
+                              borderRadius: "12px",
+                              fontSize: { xs: "0.8rem", sm: "1rem" }, // Giảm fontSize trên xs
+                              py: { xs: 0.5, sm: 1 }, // Giảm padding y trên xs
+                            }}
                           >
                             {activeTab === "Buy" ? "Buy" : "Sell"}
                           </Button>
@@ -1549,27 +1587,31 @@ export default function BGTMarketApp() {
             onPageChange={handleChangePage}
             rowsPerPage={rowsPerPage}
             onRowsPerPageChange={handleChangeRowsPerPage}
-            rowsPerPageOptions={[5, 10, 25, 50, 100]}
+            rowsPerPageOptions={[5, 10, 25, 50, 100, 200]}
             sx={{
-              color: "#fff", // Màu chữ trắng cho tất cả các phần trong TablePagination
-              fontFamily: "'Itim', cursive", // Thay đổi phông chữ toàn bộ
+              color: "#fff",
+              fontFamily: "'Itim', cursive",
+              fontSize: { xs: "0.8rem", sm: "1rem" }, // Giảm fontSize trên xs
               "& .MuiTablePagination-caption": {
-                color: "#fff", // Màu chữ cho "Rows per page"
-                fontFamily: "'Itim', cursive", // Phông chữ cho phần "Rows per page"
+                color: "#fff",
+                fontFamily: "'Itim', cursive",
+                fontSize: { xs: "0.8rem", sm: "1rem" }, // Giảm fontSize trên xs
               },
               "& .MuiTablePagination-selectLabel": {
-                color: "#fff", // Màu chữ cho nhãn "Rows per page:"
-                fontFamily: "'Itim', cursive", // Phông chữ cho nhãn "Rows per page:"
+                color: "#fff",
+                fontFamily: "'Itim', cursive",
+                fontSize: { xs: "0.8rem", sm: "1rem" }, // Giảm fontSize trên xs
               },
               "& .MuiTablePagination-select": {
-                color: "#fff", // Màu chữ cho dropdown chọn số hàng
-                fontFamily: "'Itim', cursive", // Phông chữ cho dropdown
+                color: "#fff",
+                fontFamily: "'Itim', cursive",
+                fontSize: { xs: "0.8rem", sm: "1rem" }, // Giảm fontSize trên xs
               },
               "& .MuiTablePagination-actions": {
-                color: "#fff", // Màu chữ cho các nút điều hướng (next, previous)
-                fontFamily: "'Itim', cursive", // Phông chữ cho nút điều hướng
+                color: "#fff",
+                fontFamily: "'Itim', cursive",
               },
-              textAlign: "center", // Căn giữa toàn bộ phần TablePagination
+              textAlign: "center",
             }}
           />
         </Container>
@@ -1577,17 +1619,14 @@ export default function BGTMarketApp() {
         {/* Form Tạo Lệnh (Đã chỉnh sửa giao diện phần Mua BGT) */}
         <Container
           sx={{
-            maxWidth: { xs: "80%", md: "90%", lg: "34%" },
+            maxWidth: { xs: "95%", sm: "90%", md: "90%", lg: "36%" }, // Full viền trên xs
             height: "100%",
             bgcolor: "black",
             opacity: "0.8",
-            borderRadius: "50px",
-            p: 4,
-            // mb:10,
+            borderRadius: { xs: "15px", sm: "15px" }, // Giảm borderRadius trên xs cho gọn
+            p: { xs: 2, sm: 4 }, // Giảm padding trên xs để sát viền
+            m: { xs: 1, sm: "0 auto" }, // Loại bỏ margin trên xs để sát viền
             boxShadow: "0 8px 30px rgba(0,0,0,0.1)",
-            // margin: "0 auto",
-            // marginTop: { xs: "0", sm: "0", md: "168px" },
-            padding: { sm: "60px 20px" },
             color: "#fff",
           }}
         >
@@ -1596,13 +1635,16 @@ export default function BGTMarketApp() {
             fontWeight="bold"
             gutterBottom
             textAlign="center"
-            sx={{ fontFamily: "'Itim', cursive" }}
+            sx={{
+              fontFamily: "'Itim', cursive",
+              fontSize: { xs: "18px", sm: "28px", md: "36px" }, // Giảm fontSize trên xs
+            }}
           >
             Create Order
           </Typography>
 
           {account && (
-            <Box sx={{ mb: 3 }}>
+            <Box sx={{ mb: { xs: 1, sm: 3 } }}>
               {/* số dư bera trong ví */}
               <Typography
                 variant="subtitle1"
@@ -1610,19 +1652,25 @@ export default function BGTMarketApp() {
                   fontFamily: "'Itim', cursive",
                   display: "flex",
                   alignItems: "center",
+                  fontSize: { xs: "0.8rem", sm: "1rem" }, // Giảm fontSize trên xs
                 }}
               >
-                <img
+                <Box
+                  component="img"
                   src="https://dr9rfdtcol2ay.cloudfront.net/assets/iconbera.png"
                   alt="BERA"
-                  style={{ width: 25, height: 25, marginRight: 8 }}
+                  sx={{
+                    width: { xs: 18, sm: 23 }, // Giảm kích thước ảnh trên xs
+                    height: { xs: 18, sm: 23 },
+                    mr: 1, // marginRight trong sx
+                  }}
                 />
                 BERA: {parseFloat(beraBalance).toFixed(2)}
               </Typography>
             </Box>
           )}
 
-          <Box sx={{ mb: 3 }}>
+          <Box sx={{ mb: { xs: 1, sm: 3 } }}> {/* Giảm margin-bottom trên xs */}
             <ToggleButtonGroup
               value={orderType}
               exclusive
@@ -1639,17 +1687,17 @@ export default function BGTMarketApp() {
                 "& .MuiToggleButton-root": {
                   flex: 1,
                   fontWeight: "bold",
-                  fontSize: "1rem",
+                  fontSize: { xs: "0.7rem", sm: "1rem" }, // Giảm fontSize trên xs
                   color: "#fff",
                   border: "none",
-                  borderRadius: "999px",
+                  borderRadius: "15px",
                   textTransform: "none",
                   fontFamily: "Itim, cursive",
                   transition: "all 0.05s",
                   "&.Mui-selected": {
                     backgroundColor: "#FFEA00",
                     color: "black",
-                    borderRadius: "999px",
+                    borderRadius: "15px",
                   },
                 },
               }}
@@ -1670,7 +1718,7 @@ export default function BGTMarketApp() {
                         mb: 1,
                         fontFamily: "Itim, cursive",
                         fontWeight: "bold",
-                        fontSize: "1.1rem",
+                        fontSize: { xs: "0.9rem", sm: "1.1rem" }, // Giảm fontSize trên xs
                       }}
                     >
                       Please connect your wallet
@@ -1681,7 +1729,7 @@ export default function BGTMarketApp() {
                 <>
                   <Box
                     sx={{
-                      mb: 2,
+                      mb: { xs: 1, sm: 2 }, // Giảm margin-bottom trên xs
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "space-between",
@@ -1694,7 +1742,7 @@ export default function BGTMarketApp() {
                           mb: 1,
                           fontFamily: "Itim, cursive",
                           fontWeight: "bold",
-                          fontSize: "1.1rem",
+                          fontSize: { xs: "0.9rem", sm: "1.1rem" }, // Giảm fontSize trên xs
                         }}
                       >
                         BGT Price ($)
@@ -1707,13 +1755,13 @@ export default function BGTMarketApp() {
                         value={price}
                         onChange={(e) => setPrice(e.target.value)}
                         sx={{
-                          borderRadius: "12px",
+                          borderRadius: { xs: "8px", sm: "12px" }, // Giảm borderRadius trên xs
                           backgroundColor: "#f5f5f5",
                           fontFamily: "Itim, cursive",
                           "& input": {
                             fontFamily: "Itim, cursive",
                             fontWeight: "bold",
-                            fontSize: "1rem",
+                            fontSize: { xs: "0.8rem", sm: "1rem" }, // Giảm fontSize trên xs
                           },
                         }}
                       />
@@ -1725,49 +1773,55 @@ export default function BGTMarketApp() {
                           fontFamily: "'Itim', cursive",
                           display: "flex",
                           alignItems: "center",
+                          fontSize: { xs: "0.7rem", sm: "0.9rem" }, // Giảm fontSize trên xs
                         }}
                       >
-                        <img
+                        <Box
+                          component="img"
                           src="https://dr9rfdtcol2ay.cloudfront.net/assets/iconbera.png"
                           alt="BERA Price"
-                          style={{ width: 23, height: 23, marginRight: 8 }}
+                          sx={{
+                            width: { xs: 18, sm: 23 }, // Kích thước mong muốn trên xs và sm
+                            height: { xs: 18, sm: 23 },
+                            maxWidth: { xs: 18, sm: 23 }, // Giới hạn kích thước tối đa
+                            maxHeight: { xs: 18, sm: 23 },
+                            objectFit: "contain", // Đảm bảo ảnh không bị méo
+                            mr: 1, // marginRight trong sx (tương đương 8px)
+                          }}
                         />
-                        BERA Price:{" "}
-                        {beraPrice
-                          ? `$${parseFloat(beraPrice).toFixed(2)}`
-                          : "N/A"}
+                        BERA Price: {beraPrice ? `$${parseFloat(beraPrice).toFixed(2)}` : "N/A"}
                       </Typography>
                     </Box>
                   </Box>
 
                   <Box
                     sx={{
-                      mb: 2,
+                      mb: { xs: 1, sm: 2 }, // Giảm margin-bottom trên xs
                       display: "flex",
-                      gap: 1,
+                      gap: { xs: 0.5, sm: 1 }, // Giảm khoảng cách giữa các nút trên xs
                       justifyContent: "center",
                     }}
                   >
                     {percentagePresets.map((percentage) => (
                       <Button
                         key={percentage}
-                        variant={selectedPercentage === percentage ? "contained" : "outlined"} // Thay đổi variant dựa trên trạng thái
+                        variant={selectedPercentage === percentage ? "contained" : "outlined"}
                         onClick={() => {
-                          setSelectedPercentage(percentage); // Cập nhật state khi nhấp
-                          setAmountByPercentage(percentage); // Gọi hàm tính toán số lượng
+                          setSelectedPercentage(percentage);
+                          setAmountByPercentage(percentage);
                         }}
                         sx={{
-                          borderRadius: "12px",
-                          minWidth: "60px",
-                          fontSize: "1rem",
+                          borderRadius: { xs: "8px", sm: "12px" }, // Giảm borderRadius trên xs
+                          minWidth: { xs: "40px", sm: "60px" }, // Giảm minWidth trên xs
+                          fontSize: { xs: "0.7rem", sm: "1rem" }, // Giảm fontSize trên xs
                           fontFamily: "'Itim', cursive",
-                          color: selectedPercentage === percentage ? "#000" : "#fff", // Màu chữ đen khi chọn, trắng khi không chọn
-                          backgroundColor: selectedPercentage === percentage ? "#ffca28" : "transparent", // Màu nền vàng khi chọn
-                          borderColor: "#fff", // Viền trắng mặc định
+                          color: selectedPercentage === percentage ? "#000" : "#fff",
+                          backgroundColor: selectedPercentage === percentage ? "#ffca28" : "transparent",
+                          borderColor: "#fff",
                           "&:hover": {
-                            backgroundColor: "#ffca28", // Màu nền khi hover
-                            color: "#000", // Màu chữ khi hover
-                            borderColor: "#ffca28", // Viền khi hover
+                            backgroundColor: "#ffca28",
+                            color: "#000",
+                            borderColor: "#ffca28",
                           },
                         }}
                       >
@@ -1776,14 +1830,15 @@ export default function BGTMarketApp() {
                     ))}
                   </Box>
 
-                  <Box sx={{ mb: 2 }}>
+                  <Box sx={{ mb: { xs: 1, sm: 2 } }}> {/* Giảm margin-bottom trên xs */}
                     <Typography
                       variant="body1"
                       sx={{
                         mb: 1,
-                        fontFamily: "Itim, cursive", // Phông chữ cho label
-                        fontWeight: "700", // Đậm chữ
-                        color: "fff", // Màu chữ tối
+                        fontFamily: "Itim, cursive",
+                        fontWeight: "700",
+                        color: "#fff",
+                        fontSize: { xs: "0.6rem", sm: "1.1rem" }, // Giảm fontSize trên xs
                       }}
                     >
                       Buying Amount ($HONEY)
@@ -1792,44 +1847,76 @@ export default function BGTMarketApp() {
                       variant="outlined"
                       fullWidth
                       sx={{
-                        borderRadius: "12px",
-                        backgroundColor: "#f5f5f5", // Nền mờ như yêu cầu
+                        borderRadius: { xs: "8px", sm: "12px" }, // Giảm borderRadius trên xs
+                        backgroundColor: "#f5f5f5",
                         "& .MuiInputBase-input": {
-                          fontFamily: "Itim, cursive", // Phông chữ cho input
-                          fontWeight: "700", // Đậm chữ nhập vào
-                          color: "#333", // Màu chữ tối
+                          fontFamily: "Itim, cursive",
+                          fontWeight: "700",
+                          color: "#333",
+                          fontSize: { xs: "0.8rem", sm: "1rem" }, // Giảm fontSize trên xs
                         },
                         "& .MuiOutlinedInput-notchedOutline": {
-                          border: "none", // Không viền
+                          border: "none",
+                        },
+                        "& .MuiFormHelperText-root": {
+                          fontFamily: "Itim, cursive",
+                          fontWeight: "700",
+                          color: "red",
+                          fontSize: { xs: "0.7rem", sm: "0.9rem" }, // Giảm fontSize trên xs
                         },
                       }}
-                      value={amount} // Số lượng BGT
-                      onChange={(e) => setAmount(e.target.value)}
+                      value={amount}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setAmount(value);
+                      }}
+                      error={amount !== "" && Number(amount) < 10}
+                      helperText={
+                        amount !== "" && Number(amount) < 10
+                          ? "Please enter quantity over 10"
+                          : ""
+                      }
+                      type="number"
+                      inputProps={{ min: 10 }}
                     />
                   </Box>
-
                   <Box
                     sx={{
-                      mb: 2,
+                      mb: { xs: 1, sm: 2 }, // Giảm margin-bottom trên xs
                       display: "flex",
                       alignItems: "center",
                     }}
                   >
                     <Typography
                       variant="body2"
-                      sx={{ fontFamily: "'Itim', cursive", marginRight: 1 }}
+                      sx={{
+                        fontFamily: "'Itim', cursive",
+                        marginRight: 1,
+                        fontSize: { xs: "0.7rem", sm: "0.9rem" }, // Giảm fontSize trên xs
+                      }}
                     >
                       Balance:
                     </Typography>
                     <Box sx={{ display: "flex", alignItems: "center" }}>
-                      <img
+                      <Box
+                        component="img"
                         src="https://dr9rfdtcol2ay.cloudfront.net/assets/honey.png"
                         alt="Honey"
-                        style={{ width: 20, height: 20, marginRight: 4 }} // Giảm khoảng cách giữa icon và giá trị
+                        sx={{
+                          width: { xs: 16, sm: 20 }, // Giảm kích thước ảnh trên xs
+                          height: { xs: 16, sm: 20 },
+                          maxWidth: { xs: 16, sm: 20 }, // Giới hạn kích thước tối đa
+                          maxHeight: { xs: 16, sm: 20 },
+                          objectFit: "contain", // Đảm bảo ảnh không bị méo
+                          mr: 0.5, // marginRight trong sx (tương đương 4px)
+                        }}
                       />
                       <Typography
                         variant="body2"
-                        sx={{ fontFamily: "'Itim', cursive" }}
+                        sx={{
+                          fontFamily: "'Itim', cursive",
+                          fontSize: { xs: "0.7rem", sm: "0.9rem" }, // Giảm fontSize trên xs
+                        }}
                       >
                         {parseFloat(honeyBalance).toFixed(2)}
                       </Typography>
@@ -1837,29 +1924,35 @@ export default function BGTMarketApp() {
                   </Box>
                   <Box
                     sx={{
-                      mb: 2,
+                      mb: { xs: 1, sm: 2 }, // Giảm margin-bottom trên xs
                       display: "flex",
                       justifyContent: "space-between",
                     }}
                   >
-                    <Typography variant="body2">
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontFamily: "Itim, cursive",
+                        fontWeight: "700",
+                        fontSize: { xs: "0.8rem", sm: "1.05rem" }, // Giảm fontSize trên xs
+                      }}
+                    >
                       Honey to pay (≥ 10.00)
                     </Typography>
-                    {/* <Typography variant="body2">0 🐻</Typography> */}
                   </Box>
                   <Button
                     variant="contained"
                     color="success"
                     onClick={createOrder}
                     fullWidth
-                    disabled={(buyStatus === "Success") ? false : true}
+                    disabled={buyStatus === "Success" ? false : true}
                     sx={{
-                      py: 1.5,
+                      py: { xs: 1, sm: 1.5 }, // Giảm padding y trên xs
                       fontWeight: "bold",
-                      borderRadius: "20px",
+                      borderRadius: { xs: "10px", sm: "20px" }, // Giảm borderRadius trên xs
                       boxShadow: "0 4px 12px rgba(0, 128, 0, 0.3)",
                       fontFamily: "'Itim', cursive",
-                      fontSize: "1.2rem",
+                      fontSize: { xs: "0.9rem", sm: "1.2rem" }, // Giảm fontSize trên xs
                       backgroundColor: "#14ED00",
                       "&:hover": {
                         backgroundColor: "#12C900",
@@ -1885,7 +1978,7 @@ export default function BGTMarketApp() {
                         mb: 1,
                         fontFamily: "Itim, cursive",
                         fontWeight: "bold",
-                        fontSize: "1.1rem",
+                        fontSize: { xs: "0.9rem", sm: "1.1rem" }, // Giảm fontSize trên xs
                       }}
                     >
                       Please connect your wallet
@@ -1894,20 +1987,27 @@ export default function BGTMarketApp() {
                 </>
               ) : (
                 <>
-                  <FormControl fullWidth sx={{ mb: 2 }}>
-                    <InputLabel id="vault-label">Reward Vault</InputLabel>
+                  <FormControl fullWidth sx={{ mb: { xs: 1, sm: 2 } }}> {/* Giảm margin-bottom trên xs */}
+                    Reward Vault
+                    <InputLabel
+                      id="vault-label"
+                      sx={{ fontSize: { xs: "0.8rem", sm: "1rem" } }} // Giảm fontSize trên xs
+                    >
+
+                    </InputLabel>
                     <Select
                       labelId="vault-label"
                       value={selectedVault}
                       label="Reward Vault"
                       onChange={(e) => setSelectedVault(e.target.value)}
                       sx={{
-                        borderRadius: "12px",
+                        borderRadius: { xs: "8px", sm: "12px" }, // Giảm borderRadius trên xs
                         backgroundColor: "#f5f5f5",
+                        fontSize: { xs: "0.8rem", sm: "1rem" }, // Giảm fontSize trên xs
                       }}
                     >
                       <MenuItem value="">
-                        <em>Choose Vault</em>
+                        <em style={{ fontSize: { xs: "0.8rem", sm: "1rem" } }}>Choose Vault</em>
                       </MenuItem>
                       {vaultsWithBalance.map((vault) =>
                         vault.name !== "" && vault.icon !== "" ? (
@@ -1915,6 +2015,9 @@ export default function BGTMarketApp() {
                             key={vault.reward_vault}
                             value={vault.reward_vault}
                             disabled={parseFloat(vault.bgtBalance) <= 0}
+                            sx={{
+                              fontSize: { xs: "0.8rem", sm: "1rem" }, // Giảm fontSize cho nội dung chính của MenuItem
+                            }}
                           >
                             <Box
                               sx={{
@@ -1924,23 +2027,28 @@ export default function BGTMarketApp() {
                                 width: "100%",
                               }}
                             >
-                              <Box
-                                sx={{ display: "flex", alignItems: "center" }}
-                              >
-                                <img
+                              <Box sx={{ display: "flex", alignItems: "center" }}>
+                                <Box
+                                  component="img"
                                   src={vault.icon}
                                   alt={vault.name}
-                                  style={{
-                                    width: "20px",
-                                    height: "20px",
-                                    marginRight: "8px",
+                                  sx={{
+                                    width: { xs: 16, sm: 20 }, // Giảm kích thước ảnh trên xs
+                                    height: { xs: 16, sm: 20 },
+                                    maxWidth: { xs: 16, sm: 20 }, // Giới hạn kích thước tối đa
+                                    maxHeight: { xs: 16, sm: 20 },
+                                    objectFit: "contain", // Đảm bảo ảnh không bị méo
+                                    mr: 1, // marginRight trong sx (tương đương 8px)
                                   }}
                                 />
                                 {vault.name}
                               </Box>
                               <Typography
                                 variant="body2"
-                                sx={{ color: "text.secondary" }}
+                                sx={{
+                                  color: "text.secondary",
+                                  fontSize: { xs: "0.7rem", sm: "0.9rem" }, // Giảm fontSize trên xs
+                                }}
                               >
                                 {vault.bgtBalance} BGT
                               </Typography>
@@ -1953,79 +2061,92 @@ export default function BGTMarketApp() {
 
                   <Box
                     sx={{
-                      mb: 2,
+                      mb: { xs: 1, sm: 2 }, // Giảm margin-bottom trên xs
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "space-between",
                     }}
                   >
-                    <TextField
-                      label="BGT Premium Rate (%)"
-                      variant="outlined"
-                      sx={{
-                        width: "50%",
-                        borderRadius: "12px",
-                        backgroundColor: "#f5f5f5",
-                      }}
-                      value={premiumRate}
-                      onChange={(e) => setPremiumRate(e.target.value)}
-                    // placeholder="ví dụ: 10 cho 110%"
-                    />
-                    {/* giá bera sell */}
+
+
+
+
+                    <Box sx={{ width: "50%" }}>
+                      <Typography
+                        variant="body1"
+                        sx={{
+                          fontFamily: "'Itim', cursive", // Phông chữ Itim
+                          fontSize: { xs: "0.9rem", sm: "1.1rem" }, // Kích thước chữ responsive
+                          mb: 1, // Margin-bottom để tạo khoảng cách với TextField
+                          fontWeight: "bold", // Tùy chọn: làm chữ đậm nếu muốn giống label
+                        }}
+                      >
+                        BGT Premium Rate (%)
+                      </Typography>
+                      <TextField
+                        variant="outlined"
+                        sx={{
+                          width: "100%", // Đặt width 100% để TextField chiếm hết chiều ngang của Box
+                          borderRadius: { xs: "8px", sm: "12px" }, // Giảm borderRadius trên xs
+                          backgroundColor: "#f5f5f5",
+                          "& .MuiInputBase-input": {
+                            fontSize: { xs: "0.8rem", sm: "1rem" }, // Giảm fontSize trên xs
+                            fontFamily: "'Itim', cursive'", // Phông chữ Itim cho nội dung nhập
+                          },
+                        }}
+                        value={premiumRate}
+                        onChange={(e) => setPremiumRate(e.target.value)}
+                      />
+                    </Box>
                     <Typography
                       variant="body2"
                       sx={{
                         fontFamily: "'Itim', cursive",
                         display: "flex",
                         alignItems: "center",
+                        fontSize: { xs: "0.7rem", sm: "0.9rem" }, // Giảm fontSize trên xs
                       }}
                     >
-                      <img
+                      <Box
+                        component="img"
                         src="https://dr9rfdtcol2ay.cloudfront.net/assets/iconbera.png"
                         alt="BERA Price"
-                        style={{ width: 23, height: 23, marginRight: 8 }}
+                        sx={{
+                          width: { xs: "18px !important", sm: "23px !important" }, // Thêm !important để ưu tiên
+                          height: { xs: "18px !important", sm: "23px !important" },
+                          maxWidth: { xs: "18px !important", sm: "23px !important" },
+                          maxHeight: { xs: "18px !important", sm: "23px !important" },
+                          objectFit: "contain", // Đảm bảo ảnh không bị méo
+                          mr: 1, // marginRight trong sx (tương đương 8px)
+                        }}
                       />
-                      BERA Price:{" "}
-                      {beraPrice
-                        ? `$${parseFloat(beraPrice).toFixed(2)}`
-                        : "N/A"}
+                      BERA Price: {beraPrice ? `$${parseFloat(beraPrice).toFixed(2)}` : "N/A"}
                     </Typography>
                   </Box>
-                  {/* phần trăm sell */}
                   <Box
                     sx={{
-                      mb: 2,
+                      mb: { xs: 1, sm: 2 }, // Giảm margin-bottom trên xs
                       display: "flex",
-                      gap: 1,
+                      gap: { xs: 0.5, sm: 1 }, // Giảm khoảng cách giữa các nút trên xs
                       justifyContent: "center",
                     }}
                   >
                     {percentagePresets.map((rate) => (
                       <Button
                         key={rate}
-                        variant={
-                          premiumRate === rate.toString()
-                            ? "contained"
-                            : "outlined"
-                        }
+                        variant={premiumRate === rate.toString() ? "contained" : "outlined"}
                         onClick={() => setPremiumRate(rate.toString())}
                         sx={{
-                          borderRadius: "12px",
-                          minWidth: "60px",
-                          fontSize: "1rem", // Điều chỉnh kích thước chữ
-                          fontFamily: "'Itim', cursive", // Thay đổi phông chữ
-                          backgroundColor:
-                            premiumRate === rate.toString()
-                              ? "#ffca28"
-                              : "transparent", // Màu nền của nút khi được chọn
-                          color:
-                            premiumRate === rate.toString()
-                              ? "black"
-                              : "inherit", // Màu chữ khi được chọn
-                          borderColor: "#fff", // Màu viền
+                          borderRadius: { xs: "8px", sm: "12px" }, // Giảm borderRadius trên xs
+                          minWidth: { xs: "40px", sm: "60px" }, // Giảm minWidth trên xs
+                          fontSize: { xs: "0.7rem", sm: "1rem" }, // Giảm fontSize trên xs
+                          fontFamily: "'Itim', cursive",
+                          backgroundColor: premiumRate === rate.toString() ? "#ffca28" : "transparent",
+                          color: premiumRate === rate.toString() ? "black" : "inherit",
+                          borderColor: "#fff",
                           "&:hover": {
-                            backgroundColor: "#ffca28", // Màu nền khi hover (giống màu chọn)
-                            color: "#000", // Màu chữ khi hover
+                            backgroundColor: "#ffca28",
+                            color: "#000",
                           },
                         }}
                       >
@@ -2036,43 +2157,48 @@ export default function BGTMarketApp() {
 
                   <Box
                     sx={{
-                      mb: 2,
+                      mb: { xs: 1, sm: 2 }, // Giảm margin-bottom trên xs
                       display: "flex",
                       justifyContent: "space-between",
                     }}
                   >
-                    <Typography variant="body2">
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontFamily: "Itim, cursive",
+                        fontWeight: "500",
+                        fontSize: { xs: "0.8rem", sm: "1.05rem" }, // Giảm fontSize trên xs
+                      }}
+                    >
                       BGT in vault (≥0.01)
                     </Typography>
-                    {/* <Typography variant="body2">0 🐻</Typography> */}
                   </Box>
                   <Box
                     sx={{
-                      mb: 2,
+                      mb: { xs: 1, sm: 2 }, // Giảm margin-bottom trên xs
                       display: "flex",
                       justifyContent: "space-between",
                     }}
                   >
                     {/* <Typography variant="body2">Ước tính nhận được</Typography>
-                    <Typography variant="body2">0 🐻</Typography> */}
+            <Typography variant="body2">0 🐻</Typography> */}
                   </Box>
-                  {/* nút bán sell */}
                   <Button
                     variant="contained"
                     color="success"
                     onClick={createOrder}
                     fullWidth
-                    disabled={(sellStatus === "Success") ? false : true}
+                    disabled={sellStatus === "Success" ? false : true}
                     sx={{
-                      py: 1.5,
+                      py: { xs: 1, sm: 1.5 }, // Giảm padding y trên xs
                       fontWeight: "bold",
-                      borderRadius: "20px",
+                      borderRadius: { xs: "10px", sm: "20px" }, // Giảm borderRadius trên xs
                       boxShadow: "0 4px 12px rgba(0, 128, 0, 0.3)",
                       fontFamily: "'Itim', cursive",
-                      fontSize: "1.2rem", // Kích thước chữ
-                      backgroundColor: "#FF0000", // Màu nền của nút
+                      fontSize: { xs: "0.9rem", sm: "1.2rem" }, // Giảm fontSize trên xs
+                      backgroundColor: "#FF0000",
                       "&:hover": {
-                        backgroundColor: "#FF3333", // Màu khi hover (có thể điều chỉnh)
+                        backgroundColor: "#FF3333",
                       },
                       "&.Mui-disabled": {
                         backgroundColor: "#FF0000",
@@ -2089,40 +2215,43 @@ export default function BGTMarketApp() {
               <>
                 <TableContainer component={Paper}>
                   {account === "" ? (
-                    <Table sx={{ minWidth: 200 }} aria-label="order table">
+                    <Table sx={{ minWidth: { xs: 150, sm: 200 } }} aria-label="order table"> {/* Giảm minWidth trên xs */}
                       <TableBody>
                         <TableRow>
-                          <TableCell>Please connect your wallet</TableCell>
+                          <TableCell sx={{ fontSize: { xs: "0.8rem", sm: "1rem" } }}> {/* Giảm fontSize trên xs */}
+                            Please connect your wallet
+                          </TableCell>
                         </TableRow>
                       </TableBody>
                     </Table>
                   ) : buyOrdersAccount === null ? (
-                    <Table sx={{ minWidth: 200 }} aria-label="order table">
+                    <Table sx={{ minWidth: { xs: 150, sm: 200 } }} aria-label="order table"> {/* Giảm minWidth trên xs */}
                       <TableBody>
                         <TableRow>
-                          <TableCell>No order</TableCell>
+                          <TableCell sx={{ fontSize: { xs: "0.8rem", sm: "1rem" } }}> {/* Giảm fontSize trên xs */}
+                            No order
+                          </TableCell>
                         </TableRow>
                       </TableBody>
                     </Table>
                   ) : (
-                    <Table sx={{ maxWidth: 200 }} aria-label="order table">
+                    <Table sx={{ maxWidth: { xs: 150, sm: 200 } }} aria-label="order table"> {/* Giảm maxWidth trên xs */}
                       <TableHead>
                         <TableRow>
-                          <TableCell>BGT Price</TableCell>
-                          <TableCell>BGT Amount</TableCell>
-                          <TableCell>Type</TableCell>
-                          <TableCell>Action</TableCell>
+                          <TableCell sx={{ fontSize: { xs: "0.7rem", sm: "0.9rem" } }}>BGT Price</TableCell> {/* Giảm fontSize trên xs */}
+                          <TableCell sx={{ fontSize: { xs: "0.7rem", sm: "0.9rem" } }}>BGT Amount</TableCell> {/* Giảm fontSize trên xs */}
+                          <TableCell sx={{ fontSize: { xs: "0.7rem", sm: "0.9rem" } }}>Type</TableCell> {/* Giảm fontSize trên xs */}
+                          <TableCell sx={{ fontSize: { xs: "0.7rem", sm: "0.9rem" } }}>Action</TableCell> {/* Giảm fontSize trên xs */}
                         </TableRow>
                       </TableHead>
                       <TableBody>
                         {displayBuyOrdersAccount.map((order, index) => (
                           <TableRow key={order.order_id || index}>
-                            <TableCell>{order.price}</TableCell>
-                            <TableCell>
-                              {(+order.filled_bgt_amount).toFixed(2)}/
-                              {(+order.bgt_amount).toFixed(2)}
+                            <TableCell sx={{ fontSize: { xs: "0.7rem", sm: "0.9rem" } }}>{order.price}</TableCell> {/* Giảm fontSize trên xs */}
+                            <TableCell sx={{ fontSize: { xs: "0.7rem", sm: "0.9rem" } }}>
+                              {(+order.filled_bgt_amount).toFixed(2)}/{(+order.bgt_amount).toFixed(2)}
                             </TableCell>
-                            <TableCell style={{ color: "green" }}>
+                            <TableCell sx={{ color: "green", fontSize: { xs: "0.7rem", sm: "0.9rem" } }}>
                               Buy
                             </TableCell>
                             <TableCell>
@@ -2130,10 +2259,12 @@ export default function BGTMarketApp() {
                                 variant="contained"
                                 color={order.state === 1 ? "success" : "gray"}
                                 disabled={order.state === 1 ? false : true}
-                                onClick={() =>
-                                  closeOrder(order.order_id, "Buy")
-                                }
-                                sx={{ borderRadius: "12px" }}
+                                onClick={() => closeOrder(order.order_id, "Buy")}
+                                sx={{
+                                  borderRadius: { xs: "8px", sm: "12px" }, // Giảm borderRadius trên xs
+                                  fontSize: { xs: "0.6rem", sm: "0.9rem" }, // Giảm fontSize trên xs
+                                  py: { xs: 0.5, sm: 1 }, // Giảm padding y trên xs
+                                }}
                               >
                                 {order.state === 1 ? "Close" : "Closed"}
                               </Button>
@@ -2152,52 +2283,65 @@ export default function BGTMarketApp() {
                   onPageChange={handleChangePagePersonalBuy}
                   rowsPerPage={rowsPerPagePersonalBuy}
                   onRowsPerPageChange={handleChangeRowsPerPagePersonalBuy}
-                  rowsPerPageOptions={[5, 10, 25, 50,]}
+                  rowsPerPageOptions={[5, 10, 25, 50, 100, 200]}
+                  sx={{
+                    fontSize: { xs: "0.7rem", sm: "0.9rem" }, // Giảm fontSize trên xs
+                    "& .MuiTablePagination-selectLabel": {
+                      fontSize: { xs: "0.7rem", sm: "0.9rem" }, // Giảm fontSize trên xs
+                    },
+                    "& .MuiTablePagination-displayedRows": {
+                      fontSize: { xs: "0.7rem", sm: "0.9rem" }, // Giảm fontSize trên xs
+                    },
+                  }}
                 />
               </>
             ) : (
               <>
                 <TableContainer component={Paper}>
                   {account === "" ? (
-                    <Table sx={{ minWidth: 200 }} aria-label="order table">
+                    <Table sx={{ minWidth: { xs: 150, sm: 200 } }} aria-label="order table"> {/* Giảm minWidth trên xs */}
                       <TableBody>
                         <TableRow>
-                          <TableCell>Please connect your wallet</TableCell>
+                          <TableCell sx={{ fontSize: { xs: "0.8rem", sm: "1rem" } }}> {/* Giảm fontSize trên xs */}
+                            Please connect your wallet
+                          </TableCell>
                         </TableRow>
                       </TableBody>
                     </Table>
                   ) : sellOrdersAccount === null ? (
-                    <Table sx={{ minWidth: 200 }} aria-label="order table">
+                    <Table sx={{ minWidth: { xs: 150, sm: 200 } }} aria-label="order table"> {/* Giảm minWidth trên xs */}
                       <TableBody>
                         <TableRow>
-                          <TableCell>No order</TableCell>
+                          <TableCell sx={{ fontSize: { xs: "0.8rem", sm: "1rem" } }}> {/* Giảm fontSize trên xs */}
+                            No order
+                          </TableCell>
                         </TableRow>
                       </TableBody>
                     </Table>
                   ) : (
-                    <Table sx={{ maxWidth: 100 }} aria-label="order table">
+                    <Table sx={{ maxWidth: { xs: 100, sm: 200 } }} aria-label="order table"> {/* Giảm maxWidth trên xs */}
                       <TableHead>
                         <TableRow>
-                          <TableCell>Premium</TableCell>
-                          <TableCell>Sold Amount</TableCell>
-                          <TableCell>Profit</TableCell>
-                          <TableCell>Action</TableCell>
+                          <TableCell sx={{ fontSize: { xs: "0.7rem", sm: "0.9rem" } }}>Premium</TableCell> {/* Giảm fontSize trên xs */}
+                          <TableCell sx={{ fontSize: { xs: "0.7rem", sm: "0.9rem" } }}>Sold Amount</TableCell> {/* Giảm fontSize trên xs */}
+                          <TableCell sx={{ fontSize: { xs: "0.7rem", sm: "0.9rem" } }}>Profit</TableCell> {/* Giảm fontSize trên xs */}
+                          <TableCell sx={{ fontSize: { xs: "0.7rem", sm: "0.9rem" } }}>Action</TableCell> {/* Giảm fontSize trên xs */}
                         </TableRow>
                       </TableHead>
                       <TableBody>
                         {displaySellOrdersAccount.map((order, index) => (
                           <TableRow key={order.order_id || index}>
-                            <TableCell>
+                            <TableCell sx={{ fontSize: { xs: "0.7rem", sm: "0.9rem" } }}>
                               {(order.markup - 10000) / 100}%
                             </TableCell>
-                            <TableCell>
+                            <TableCell sx={{ fontSize: { xs: "0.7rem", sm: "0.9rem" } }}>
                               {+order.unclaimed_bgt < 0.01
                                 ? "<0.01"
                                 : +order.unclaimed_bgt == 0
                                   ? "0.00"
                                   : (+order.unclaimed_bgt).toFixed(3)}
                             </TableCell>
-                            <TableCell>
+                            <TableCell sx={{ fontSize: { xs: "0.7rem", sm: "0.9rem" } }}>
                               {(
                                 beraPrice *
                                 +order.unclaimed_bgt *
@@ -2209,10 +2353,12 @@ export default function BGTMarketApp() {
                                 variant="contained"
                                 color={order.state === 1 ? "success" : "gray"}
                                 disabled={order.state === 1 ? false : true}
-                                onClick={() =>
-                                  closeOrder(order.order_id, "Sell")
-                                }
-                                sx={{ borderRadius: "12px" }}
+                                onClick={() => closeOrder(order.order_id, "Sell")}
+                                sx={{
+                                  borderRadius: { xs: "8px", sm: "12px" }, // Giảm borderRadius trên xs
+                                  fontSize: { xs: "0.6rem", sm: "0.9rem" }, // Giảm fontSize trên xs
+                                  py: { xs: 0.5, sm: 1 }, // Giảm padding y trên xs
+                                }}
                               >
                                 {order.state === 1 ? "Close" : "Closed"}
                               </Button>
@@ -2231,7 +2377,16 @@ export default function BGTMarketApp() {
                   onPageChange={handleChangePagePersonalSell}
                   rowsPerPage={rowsPerPagePersonalSell}
                   onRowsPerPageChange={handleChangeRowsPerPagePersonalSell}
-                  rowsPerPageOptions={[5, 10, 25, 50, 100]}
+                  rowsPerPageOptions={[5, 10, 25, 50, 100, 200]}
+                  sx={{
+                    fontSize: { xs: "0.7rem", sm: "0.9rem" }, // Giảm fontSize trên xs
+                    "& .MuiTablePagination-selectLabel": {
+                      fontSize: { xs: "0.7rem", sm: "0.9rem" }, // Giảm fontSize trên xs
+                    },
+                    "& .MuiTablePagination-displayedRows": {
+                      fontSize: { xs: "0.7rem", sm: "0.9rem" }, // Giảm fontSize trên xs
+                    },
+                  }}
                 />
               </>
             )}
@@ -2241,15 +2396,62 @@ export default function BGTMarketApp() {
               variant="body2"
               color="text.secondary"
               textAlign="center"
+              sx={{ fontSize: { xs: "0.7rem", sm: "0.9rem" } }} // Giảm fontSize trên xs
             >
               {status}
             </Typography>
           )}
         </Container>
       </Box>
+
+      <footer>
+  <Container
+    sx={{
+      backgroundColor: "rgba(104, 77, 2, 0.8)",
+      padding: "5px 10px",
+      display: "flex",
+      alignItems: "center",
+      fontFamily: "Itim, cursive",
+      maxWidth: "100% !important",
+      position: "fixed",
+      bottom: 0,
+      left: 0,
+      right: 0,
+      zIndex: 99,
+    }}
+  >
+    <Box
+      sx={{
+        width: { xs: "10%", sm: "7%", md: "5%", lg: "4%" },
+        display: "flex",
+        justifyContent: "center",
+        marginRight: "20px",
+      }}
+    >
+      <img
+        src="https://dr9rfdtcol2ay.cloudfront.net/assets/logomain.png"
+        alt="logo"
+        style={{
+          width: "100%",
+          userSelect: "none",
+        }}
+      />
+    </Box>
+    <Typography
+      sx={{
+        fontFamily: "Itim, cursive",
+        color: "white",
+        width: "80%",
+        userSelect: "none",
+        fontSize: { xs: "10px", sm: "12px", md: "14px" }, // Giảm kích thước chữ
+      }}
+    >
+      Trade BGT tokens easily and securely before claim time. Join the
+      peer-to-peer (C2C) BGT pre-claim marketplace today.
+    </Typography>
+  </Container>
+</footer>
     </Box >
+
   );
-
-
-
 }
