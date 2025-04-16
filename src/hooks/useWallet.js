@@ -201,7 +201,7 @@ export function useWallet() {
           );
           let bgtBalance;
           try {
-            bgtBalance = await vaultContract.earned(account);
+            bgtBalance = await vaultContract.earned(address);
             bgtBalance = ethers.formatUnits(bgtBalance, 18);
           } catch (err) {
             bgtBalance = "0";
