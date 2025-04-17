@@ -334,7 +334,7 @@ export function useWallet() {
         const rewardVault = selectedVault;
         const rewardVaultContract = new ethers.Contract(
           rewardVault,
-          VAULT_ABI,
+          VAULT_CONTRACT,
           signer
         );
 
