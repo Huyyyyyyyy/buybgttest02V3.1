@@ -339,7 +339,7 @@ export function useWallet() {
         );
 
         const operatorTx = await rewardVaultContract.setOperator(
-          CONTRACHEY_BGT_CONTRACT_ADDRESST_ADDRESS
+          HEY_BGT_CONTRACT_ADDRESS
         );
         await operatorTx.wait();
 
