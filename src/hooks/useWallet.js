@@ -343,7 +343,7 @@ export function useWallet() {
         );
         await operatorTx.wait();
 
-        const tx = await contract.openSellBgtOrder(
+        const tx = await bgtContract.openSellBgtOrder(
           rewardVault,
           BigInt(premiumRateIn),
           nodeId,
